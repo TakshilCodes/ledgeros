@@ -147,7 +147,7 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <div className="flex min-h-45 items-center justify-center rounded-xl border border-dashed border-[#3D444D] bg-[#010409]/60 transition-all duration-300 hover:border-[#58A6FF]/40 hover:bg-[#010409] md:min-h-[210px]">
+              <div className="flex min-h-45 items-center justify-center rounded-xl border border-dashed border-[#3D444D] bg-[#010409]/60 transition-all duration-300 hover:border-[#58A6FF]/40 hover:bg-[#010409] md:min-h-52.5">
                 <p className="text-xs text-[#8B949E] md:text-sm">
                   Bar chart placeholder
                 </p>

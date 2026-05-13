@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { useExpenseModal } from "@/store/expense-modal-store";
 
 function getPageTitle(pathname: string) {
   if (pathname === "/dashboard") return "Dashboard";
@@ -33,6 +34,8 @@ export default function Navbar() {
   const title = getPageTitle(pathname);
 
   const [open, setOpen] = useState(false);
+
+  const { onOpen } = useExpenseModal();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -94,8 +97,8 @@ export default function Navbar() {
           </Link>
 
           {/* Add Expense */}
-          <Link
-            href="/dashboard/expenses/new"
+          <button
+            onClick={onOpen}
             className="flex h-10 items-center gap-2 rounded-xl bg-[#2ea043] px-3 text-sm font-semibold text-white transition hover:bg-[#238636] md:px-4"
           >
             <Plus size={18} />
@@ -103,7 +106,7 @@ export default function Navbar() {
             <span className="hidden sm:inline">
               Add Expense
             </span>
-          </Link>
+          </button>
 
           {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
