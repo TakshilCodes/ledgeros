@@ -47,11 +47,6 @@ const navItems = [
         icon: Wallet,
     },
     {
-        label: "Search",
-        href: "/dashboard/search",
-        icon: Search,
-    },
-    {
         label: "Insights",
         href: "/dashboard/insights",
         icon: BarChart3,
@@ -78,20 +73,24 @@ export default function Sidebar() {
             <div className="mb-8 flex items-center justify-center md:justify-start md:px-2">
 
                 {/* Mobile Logo */}
-                <Image
-                    src={shortLogo}
-                    alt="LedgerOS"
-                    className="block h-10 w-10 rounded-2xl md:hidden"
-                    priority
-                />
+                <Link href={'/dashboard'}>
+                    <Image
+                        src={shortLogo}
+                        alt="LedgerOS"
+                        className="block h-10 w-10 rounded-2xl md:hidden"
+                        priority
+                    />
+                </Link>
 
                 {/* Desktop Logo */}
-                <Image
-                    src={logo}
-                    alt="LedgerOS"
-                    className="hidden w-45 rounded-2xl md:block"
-                    priority
-                />
+                <Link href={'/dashboard'}>
+                    <Image
+                        src={logo}
+                        alt="LedgerOS"
+                        className="hidden w-45 rounded-2xl md:block"
+                        priority
+                    />
+                </Link>
             </div>
 
             {/* Navigation */}

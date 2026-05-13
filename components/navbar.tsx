@@ -68,7 +68,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-[#3D444D] bg-[#010409]/90 px-4 py-3 backdrop-blur md:px-6">
       <div className="flex items-center justify-between gap-3">
-        
+
         {/* Left */}
         <div>
           <h1 className="text-xl font-semibold text-white md:text-2xl">
@@ -76,25 +76,8 @@ export default function Navbar() {
           </h1>
         </div>
 
-        {/* Desktop Search */}
-        <Link
-          href="/dashboard/search"
-          className="hidden w-full max-w-sm items-center gap-2 rounded-xl border border-[#3D444D] bg-[#0D1117] px-4 py-2 text-sm text-[#8B949E] transition hover:bg-[#151B23] md:flex"
-        >
-          <Search size={17} />
-          Search expenses, subscriptions...
-        </Link>
-
         {/* Right */}
         <div className="flex items-center gap-2">
-          
-          {/* Mobile Search */}
-          <Link
-            href="/dashboard/search"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white md:hidden"
-          >
-            <Search size={18} />
-          </Link>
 
           {/* Add Expense */}
           <button
@@ -120,7 +103,7 @@ export default function Navbar() {
 
             {open && (
               <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-[#3D444D] bg-[#0D1117] shadow-2xl">
-                
+
                 <Link
                   href="/dashboard/settings"
                   onClick={() => setOpen(false)}

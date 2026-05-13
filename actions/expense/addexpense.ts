@@ -5,13 +5,14 @@ import { AddExpenseZod } from "@/lib/validators/addexpense"
 import { ExpenseCategory } from "@/app/generated/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 type data = {
-  name: string;
-  amount: number;
-  category: ExpenseCategory;
-  spentAt: Date;
-  note?: string;
+    name: string;
+    amount: number;
+    category: ExpenseCategory;
+    spentAt: Date;
+    note?: string;
 };
 
 export async function Addexpense(data: data) {
@@ -21,7 +22,7 @@ export async function Addexpense(data: data) {
 
         const userId = session?.user.id
 
-        if(!userId){
+        if (!userId) {
             return {
                 ok: false,
                 msg: null,
@@ -40,15 +41,18 @@ export async function Addexpense(data: data) {
         }
 
         await prisma.expense.create({
-            data:{
+            data: {
                 userId,
                 name: data.name,
                 amount: data.amount,
                 category: data.category,
                 note: data.note,
-                spentAt : data.spentAt
+                spentAt: data.spentAt
             }
         })
+
+        revalidatePath("/dashboard/expenses");
+        revalidatePath("/dashboard");
 
         return {
             ok: true,
@@ -56,7 +60,7 @@ export async function Addexpense(data: data) {
             error: null
         }
 
-    } catch (e : any) {
+    } catch (e: any) {
         return {
             ok: false,
             msg: null,

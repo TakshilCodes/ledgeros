@@ -1,6 +1,6 @@
 import Navbar from "@/components/navbar";
 import Sidebar from "@/components/sidebar";
-import AddExpenseModal from "@/components/Expense/AddExpenseModal";
+import AddExpenseModal from "@/components/Expense/ExpenseModal";
 
 export default function DashboardLayout({
   children,

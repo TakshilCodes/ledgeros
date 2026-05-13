@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Utensils, Car, ShoppingBag, ReceiptText } from "lucide-react";
 import { ExpenseCategory } from "@/app/generated/prisma/client";
 import { useExpenseModal } from "@/store/expense-modal-store";
-import {Dialog,DialogContent,DialogHeader,DialogTitle,} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
-import {Popover,PopoverContent,PopoverTrigger,} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover";
 import { AddExpenseZod } from "@/lib/validators/addexpense";
 import { Addexpense } from "@/actions/expense/addexpense";
+import { updateExpense } from "@/actions/expense/updateExpense"
+import { useRouter } from "next/navigation";
+
 
 const categories = [
     { label: "Food", value: "FOOD", icon: Utensils },
@@ -31,16 +34,58 @@ export default function AddExpenseModal() {
         note: "",
     });
     const [error, setError] = useState("")
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    const { mode, expense } = useExpenseModal();
+
+    useEffect(() => {
+        if (mode === "edit" && expense) {
+            setData({
+                name: expense.name,
+                amount: Number(expense.amount),
+                note: expense.note || "",
+            });
+
+            setSelectedCategory(expense.category);
+            setDate(new Date(expense.spentAt));
+        }
+    }, [mode, expense]);
 
     async function handelsubmit(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
 
+        setLoading(true);
         setError("");
+
+        if (!date) {
+            setError("Please select a date");
+            setLoading(false);
+            return;
+        }
+
+        const selectedDate = new Date(date);
+        const now = new Date();
+
+        if (
+            selectedDate.getFullYear() === now.getFullYear() &&
+            selectedDate.getMonth() === now.getMonth() &&
+            selectedDate.getDate() === now.getDate()
+        ) {
+            selectedDate.setHours(
+                now.getHours(),
+                now.getMinutes(),
+                now.getSeconds(),
+                now.getMilliseconds()
+            );
+        } else {
+            selectedDate.setHours(12, 0, 0, 0);
+        }
 
         const finalData = {
             ...data,
             category: selectedCategory,
-            spentAt: date,
+            spentAt: selectedDate,
         };
 
         const result = AddExpenseZod.safeParse(finalData);
@@ -57,17 +102,35 @@ export default function AddExpenseModal() {
                 "Invalid input"
             );
 
+
+            setLoading(false);
+
             return;
         }
 
-        const res = await Addexpense(result.data);
+        const res =
+            mode === "edit" && expense
+                ? await updateExpense(expense.id, result.data)
+                : await Addexpense(result.data);
 
         if (!res.ok) {
             setError(res.error || "Something went wrong!");
+            setLoading(false);
             return;
         }
 
+        setData({
+            name: "",
+            amount: 0,
+            note: "",
+        });
+
+        setSelectedCategory("FOOD");
+        setDate(new Date());
+
         onClose();
+        router.refresh();
+        setLoading(false);
     }
 
     return (
@@ -75,7 +138,7 @@ export default function AddExpenseModal() {
             <DialogContent className="border-[#3D444D] bg-[#0D1117] text-white sm:max-w-lg">
                 <DialogHeader className="flex flex-row items-center justify-between">
                     <DialogTitle className="text-lg font-semibold">
-                        Add Expense
+                        {mode === "edit" ? "Edit Expense" : "Add Expense"}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -91,6 +154,7 @@ export default function AddExpenseModal() {
 
                         <input
                             type="text"
+                            value={data.name}
                             placeholder="e.g. Swiggy Order"
                             onChange={(e) => setData((prev) => ({ ...prev, name: e.target.value }))}
                             className="w-full rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636]"
@@ -106,13 +170,11 @@ export default function AddExpenseModal() {
                         <input
                             type="number"
                             min={0}
+                            value={data.amount || ""}
                             placeholder="₹0"
-                            onChange={(e) => setData((prev) => ({ ...prev, amount: Number(e.target.value) }))}
-                            onKeyDown={(e) => {
-                                if (e.key === "-" || e.key === "e") {
-                                    e.preventDefault();
-                                }
-                            }}
+                            onChange={(e) =>
+                                setData((prev) => ({ ...prev, amount: Number(e.target.value) }))
+                            }
                             className="w-full rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                     </div>
@@ -209,24 +271,20 @@ export default function AddExpenseModal() {
                     </div>
 
                     {/* Note */}
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-white">
-                            Note (Optional)
-                        </label>
-
-                        <textarea
-                            rows={4}
-                            placeholder="Add a note..."
-                            onChange={(e) => setData((prev) => ({ ...prev, note: e.target.value }))}
-                            className="w-full resize-none rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636]"
-                        />
-                    </div>
+                    <textarea
+                        rows={4}
+                        value={data.note}
+                        placeholder="Add a note..."
+                        onChange={(e) => setData((prev) => ({ ...prev, note: e.target.value }))}
+                        className="w-full resize-none rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636]"
+                    />
 
                     {/* Buttons */}
                     <div className="flex gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
+                            disabled={loading}
                             className="flex-1 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 py-3 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#1f2630]"
                         >
                             Cancel
@@ -234,10 +292,20 @@ export default function AddExpenseModal() {
 
                         <button
                             type="button"
+                            disabled={loading}
                             onClick={(e) => handelsubmit(e)}
-                            className="flex-1 rounded-xl bg-[#2ea043] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#238636]"
+                            className="flex-1 rounded-xl bg-[#2ea043] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#238636] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            Add Expense
+                            {loading ? (
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                    {mode === "edit" ? "Saving..." : "Adding..."}
+                                </div>
+                            ) : mode === "edit" ? (
+                                "Save Changes"
+                            ) : (
+                                "Add Expense"
+                            )}
                         </button>
                     </div>
                 </div>
