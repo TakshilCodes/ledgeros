@@ -71,6 +71,7 @@ export default function ExpensesList({
     const [expenses, setExpenses] = useState(initialExpenses);
     const [cursor, setCursor] = useState(initialCursor);
     const [loading, setLoading] = useState(false);
+    
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
 

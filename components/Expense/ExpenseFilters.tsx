@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, Filter, CalendarDays, ArrowUpDown, X } from "lucide-react";
 import Link from "next/link";
@@ -8,6 +9,12 @@ export default function ExpenseFilters() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+
+    const [searchValue, setSearchValue] = useState(
+        searchParams.get("search") || ""
+    );
+
+    const isFirstRender = useRef(true)
 
     const hasFilters =
         searchParams.get("search") ||
@@ -24,9 +31,23 @@ export default function ExpenseFilters() {
             params.set(key, value);
         }
 
-        router.replace(`${pathname}?${params.toString()}`);
-        router.refresh();
+        const queryString = params.toString();
+
+        router.replace(queryString ? `${pathname}?${queryString}` : pathname);
     }
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            updateParam("search", searchValue);
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [searchValue]);
 
     return (
         <section className="rounded-xl border border-[#3D444D] bg-[#0D1117] p-3">
@@ -39,15 +60,18 @@ export default function ExpenseFilters() {
 
                     <input
                         type="text"
-                        defaultValue={searchParams.get("search") || ""}
-                        onChange={(e) => updateParam("search", e.target.value)}
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
                         placeholder="Search expenses..."
                         className="h-10 w-full rounded-lg border border-[#3D444D] bg-[#010409] pl-10 pr-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#238636]"
                     />
                 </div>
 
                 <div className="relative">
-                    <Filter size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]" />
+                    <Filter
+                        size={16}
+                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]"
+                    />
 
                     <select
                         defaultValue={searchParams.get("category") || "ALL"}
@@ -63,7 +87,10 @@ export default function ExpenseFilters() {
                 </div>
 
                 <div className="relative">
-                    <CalendarDays size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]" />
+                    <CalendarDays
+                        size={16}
+                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]"
+                    />
 
                     <select
                         defaultValue={searchParams.get("date") || "all"}
@@ -77,7 +104,10 @@ export default function ExpenseFilters() {
                 </div>
 
                 <div className="relative">
-                    <ArrowUpDown size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]" />
+                    <ArrowUpDown
+                        size={16}
+                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]"
+                    />
 
                     <select
                         defaultValue={searchParams.get("sort") || "newest"}
