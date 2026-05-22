@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/ledgerOS.png" alt="LedgerOS Logo" width="120" />
+  <img src="./public/ledgerOS.png" alt="LedgerOS Logo" width="180" />
 </p>
 
 <div align="center">
