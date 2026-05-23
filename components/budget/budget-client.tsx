@@ -566,7 +566,7 @@ export default function BudgetClient({
                             <button
                                 type="button"
                                 onClick={onOpen}
-                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 text-sm font-semibold text-white transition hover:bg-[#2EA043]"
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 text-sm font-semibold text-white transition hover:bg-[#2EA043] cursor-pointer"
                             >
                                 <Plus size={17} />
                                 Add Budget
@@ -576,7 +576,7 @@ export default function BudgetClient({
                                 <button
                                     type="button"
                                     onClick={handlePreviousMonth}
-                                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
+                                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center cursor-pointer rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
                                 >
                                     <ChevronLeft size={17} />
                                 </button>
@@ -589,7 +589,7 @@ export default function BudgetClient({
                                                 month: Number(event.target.value),
                                             })
                                         }
-                                        className="h-10 min-w-[120px] rounded-xl border border-[#3D444D] bg-[#151B23] px-3 text-sm text-[#C9D1D9] outline-none transition focus:border-[#58A6FF]"
+                                        className="h-10 min-w-30 rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-3 text-sm text-[#C9D1D9] outline-none transition focus:border-[#58A6FF]"
                                     >
                                         {monthOptions.map((month) => (
                                             <option key={month.value} value={month.value}>
@@ -605,7 +605,7 @@ export default function BudgetClient({
                                                 year: Number(event.target.value),
                                             })
                                         }
-                                        className="h-10 min-w-[96px] rounded-xl border border-[#3D444D] bg-[#151B23] px-3 text-sm text-[#C9D1D9] outline-none transition focus:border-[#58A6FF]"
+                                        className="h-10 min-w-24 rounded-xl border cursor-pointer border-[#3D444D] bg-[#151B23] px-3 text-sm text-[#C9D1D9] outline-none transition focus:border-[#58A6FF]"
                                     >
                                         {getYearOptions().map((year) => (
                                             <option key={year} value={year}>
@@ -618,7 +618,7 @@ export default function BudgetClient({
                                 <button
                                     type="button"
                                     onClick={handleNextMonth}
-                                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
+                                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center cursor-pointer rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
                                 >
                                     <ChevronRight size={17} />
                                 </button>
@@ -809,7 +809,7 @@ export default function BudgetClient({
                                     <button
                                         type="button"
                                         onClick={onOpen}
-                                        className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 text-sm font-semibold text-white transition hover:bg-[#2EA043]"
+                                        className="cursor-pointer mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 text-sm font-semibold text-white transition hover:bg-[#2EA043]"
                                     >
                                         <Plus size={17} />
                                         Add Budget
