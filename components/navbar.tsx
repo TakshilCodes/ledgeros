@@ -82,7 +82,7 @@ export default function Navbar() {
           {/* Add Expense */}
           <button
             onClick={onOpen}
-            className="flex h-10 items-center gap-2 rounded-xl bg-[#2ea043] px-3 text-sm font-semibold text-white transition hover:bg-[#238636] md:px-4"
+            className="flex h-10 items-center cursor-pointer gap-2 rounded-xl bg-[#2ea043] px-3 text-sm font-semibold text-white transition hover:bg-[#238636] md:px-4"
           >
             <Plus size={18} />
 
