@@ -43,6 +43,9 @@ export async function getSubscriptionStats() {
     };
   }
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const [activeSubscriptions, totalSubscriptions, upcomingRenewal] =
     await Promise.all([
       prisma.subscription.findMany({
@@ -67,7 +70,7 @@ export async function getSubscriptionStats() {
           userId,
           isActive: true,
           nextRenewalDate: {
-            gte: new Date(),
+            gte: today,
           },
         },
         orderBy: {

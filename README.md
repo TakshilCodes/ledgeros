@@ -20,74 +20,111 @@ Track expenses, manage subscriptions, monitor budgets, and build better spending
 
 ---
 
-# 🚀 About Ledgeros
+# 🚀 About LedgerOS
 
-Ledgeros is a modern multi-user expense and subscription tracking platform focused on helping users:
-- manage spending,
-- track subscriptions,
-- monitor budgets,
-- and improve financial awareness.
+LedgerOS is a modern multi-user expense and subscription tracking platform focused on helping users:
 
-The project is designed with:
-- clean architecture,
-- modern UI/UX,
-- and production-style full-stack practices.
+- manage daily expenses
+- track subscriptions
+- manage recurring expenses
+- monitor budgets
+- improve financial awareness
+
+The project is designed with clean architecture, modern UI/UX, and production-style full-stack practices.
 
 ---
 
 # ✨ Current Progress
 
 ## ✅ Completed
+
 - Authentication system
 - Dashboard UI
+- Responsive dashboard layout
 - Expense management system
 - Expense filters & search
 - Subscription management system
-- Responsive dashboard layout
+- Subscription templates
+- Recurring expenses system
+- Mobile-friendly expense, subscription, and recurring layouts
 
 ---
 
 ## 🚧 In Progress
+
 - Budget system
 - Expense charts
-- Recurring expenses
 - Weekly reports
 - No Spend Day tracker
 - Alerts & insights
 - Redis caching
 - Dashboard analytics
-- Subscription templates
+- Subscription renewal automation
 
 ---
 
 # 🛠️ Tech Stack
 
 ## Frontend
-- Next.js (App Router)
-- Tailwind CSS
+
+- Next.js App Router
 - TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Lucide React
 
 ## Backend
+
 - Next.js Server Actions
 - API Routes
-
-## Database
-- PostgreSQL
-
-## ORM
-- Prisma ORM
-
-## Authentication
 - Auth.js / NextAuth
 
+## Database
+
+- PostgreSQL
+- Prisma ORM
+
 ## State Management
+
 - Zustand
 
 ## Charts
+
 - Chart.js
 
 ## Caching
+
 - Redis
+
+---
+
+# ⏰ Subscription Renewal Automation
+
+LedgerOS includes a protected daily cron route to update overdue active subscriptions automatically.
+
+It checks subscriptions where:
+
+```txt
+isActive = true
+nextRenewalDate < today
+```
+
+Then it moves the renewal date forward based on the billing cycle:
+
+```txt
+Monthly: 22 May 2026 → 22 June 2026
+Yearly: 20 May 2026 → 20 May 2027
+```
+
+If a subscription is many cycles behind, the date keeps moving forward until it becomes upcoming again.
+
+The cron route is protected using:
+
+```env
+CRON_SECRET=""
+```
+
+This is a V1 implementation. At larger scale, this can be moved to a queue/worker system with batching, retries, and monitoring.
 
 ---
 
@@ -102,6 +139,7 @@ The project is designed with:
 - Dashboard insights
 - No Spend Day streak system
 - Subscription templates
+- Protected cron job for automatic renewal updates
 
 ---
 
@@ -139,8 +177,10 @@ DATABASE_URL=""
 AUTH_SECRET=""
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
-NEXTAUTH_SECRET=
-NEXTAUTH_URL=
+NEXTAUTH_SECRET=""
+NEXTAUTH_URL=""
+
+CRON_SECRET=""
 ```
 
 ---
