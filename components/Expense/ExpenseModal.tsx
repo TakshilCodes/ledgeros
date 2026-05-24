@@ -196,7 +196,7 @@ export default function AddExpenseModal() {
                                         key={category.label}
                                         type="button"
                                         onClick={() => setSelectedCategory(category.value as ExpenseCategory)}
-                                        className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition ${active
+                                        className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition cursor-pointer ${active
                                             ? "border-[#238636] bg-[#238636]/10 text-white"
                                             : "border-[#3D444D] bg-[#151B23] text-[#8B949E] hover:border-[#4B5563] hover:bg-[#1a212b] hover:text-white"
                                             }`}
@@ -285,7 +285,7 @@ export default function AddExpenseModal() {
                             type="button"
                             onClick={onClose}
                             disabled={loading}
-                            className="flex-1 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 py-3 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#1f2630]"
+                            className="flex-1 rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 py-3 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#1f2630]"
                         >
                             Cancel
                         </button>
@@ -294,7 +294,7 @@ export default function AddExpenseModal() {
                             type="button"
                             disabled={loading}
                             onClick={(e) => handelsubmit(e)}
-                            className="flex-1 rounded-xl bg-[#2ea043] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#238636] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="flex-1 rounded-xl cursor-pointer bg-[#2ea043] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#238636] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center gap-2">

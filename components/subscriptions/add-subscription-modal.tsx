@@ -321,7 +321,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                     </button>
                 </div>
 
-                <div className="max-h-[calc(90vh-80px)] overflow-y-auto p-5">
+                <div className="max-h-[calc(90vh-80px)] overflow-y-auto scrollbar-hide p-5">
                     {/* STEP 1: CHOOSE TEMPLATE / CUSTOM */}
                     {step === "choose" && (
                         <div className="space-y-4">
@@ -364,7 +364,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                         key={template.id}
                                         type="button"
                                         onClick={() => chooseTemplate(template)}
-                                        className="flex items-center gap-3 rounded-xl border border-[#3D444D] bg-[#151B23] p-3 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
+                                        className="flex items-center gap-3 rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] p-3 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
                                     >
                                         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#3D444D] bg-[#010409]">
                                             {template.logo ? (
@@ -459,7 +459,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                             key={plan.id}
                                             type="button"
                                             onClick={() => choosePlan(plan)}
-                                            className="rounded-xl border border-[#3D444D] bg-[#151B23] p-4 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
+                                            className="rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] p-4 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>

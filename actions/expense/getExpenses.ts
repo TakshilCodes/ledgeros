@@ -146,12 +146,26 @@ export async function getExpenses(params: GetExpensesParams = {}) {
 
     const orderBy =
         sort === "oldest"
-            ? { spentAt: "asc" as const }
+            ? [
+                { spentAt: "asc" as const },
+                { createdAt: "asc" as const },
+            ]
             : sort === "highest"
-                ? { amount: "desc" as const }
+                ? [
+                    { amount: "desc" as const },
+                    { spentAt: "desc" as const },
+                    { createdAt: "desc" as const },
+                ]
                 : sort === "lowest"
-                    ? { amount: "asc" as const }
-                    : { spentAt: "desc" as const };
+                    ? [
+                        { amount: "asc" as const },
+                        { spentAt: "desc" as const },
+                        { createdAt: "desc" as const },
+                    ]
+                    : [
+                        { spentAt: "desc" as const },
+                        { createdAt: "desc" as const },
+                    ];
 
     const expenses = await prisma.expense.findMany({
         where,

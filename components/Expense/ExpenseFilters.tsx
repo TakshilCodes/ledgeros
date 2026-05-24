@@ -168,10 +168,6 @@ export default function ExpenseFilters() {
           </button>
         ) : null}
       </div>
-
-      {isPending ? (
-        <p className="mt-3 text-xs text-[#8B949E]">Updating expenses...</p>
-      ) : null}
     </section>
   );
 }

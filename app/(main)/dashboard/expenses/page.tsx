@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   CalendarDays,
   IndianRupee,
@@ -18,6 +19,13 @@ type Props = {
     date?: string;
     sort?: string;
   }>;
+};
+
+type Filters = {
+  search: string;
+  category: string;
+  date: string;
+  sort: string;
 };
 
 function formatCurrency(amount: number) {
@@ -56,6 +64,66 @@ function StatCard({
   );
 }
 
+function ExpensesListSkeleton() {
+  return (
+    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
+      <div className="space-y-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div
+            key={index}
+            className="rounded-2xl border border-[#3D444D] bg-[#010409] p-4"
+          >
+            <div className="hidden items-start justify-between gap-4 md:flex">
+              <div className="flex min-w-0 flex-1 items-start gap-4">
+                <div className="h-12 w-12 animate-pulse rounded-2xl bg-[#151B23]" />
+
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="h-4 w-44 animate-pulse rounded bg-[#151B23]" />
+                  <div className="h-3 w-64 animate-pulse rounded bg-[#151B23]" />
+                  <div className="h-6 w-32 animate-pulse rounded-full bg-[#151B23]" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="h-5 w-20 animate-pulse rounded bg-[#151B23]" />
+                <div className="h-8 w-8 animate-pulse rounded-lg bg-[#151B23]" />
+              </div>
+            </div>
+
+            <div className="md:hidden">
+              <div className="flex items-start gap-3">
+                <div className="h-11 w-11 animate-pulse rounded-xl bg-[#151B23]" />
+
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="h-4 w-36 animate-pulse rounded bg-[#151B23]" />
+                  <div className="h-3 w-48 animate-pulse rounded bg-[#151B23]" />
+                  <div className="h-5 w-24 animate-pulse rounded-full bg-[#151B23]" />
+                </div>
+
+                <div className="h-5 w-16 animate-pulse rounded bg-[#151B23]" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+async function ExpensesListSection({ filters }: { filters: Filters }) {
+  const expensesData = await getExpenses(filters);
+
+  return (
+    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
+      <ExpensesList
+        initialExpenses={expensesData.expenses}
+        initialCursor={expensesData.nextCursor}
+        filters={filters}
+      />
+    </section>
+  );
+}
+
 export default async function ExpensesPage({ searchParams }: Props) {
   const params = await searchParams;
 
@@ -66,10 +134,9 @@ export default async function ExpensesPage({ searchParams }: Props) {
     sort: params.sort || "newest",
   };
 
-  const [statsData, expensesData] = await Promise.all([
-    getExpenseStats(),
-    getExpenses(filters),
-  ]);
+  const statsData = await getExpenseStats();
+
+  const filtersKey = JSON.stringify(filters);
 
   return (
     <div className="min-h-screen bg-[#010409] px-4 py-5 text-white sm:px-6 lg:px-8">
@@ -124,13 +191,9 @@ export default async function ExpensesPage({ searchParams }: Props) {
 
         <ExpenseFilters />
 
-        <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-          <ExpensesList
-            initialExpenses={expensesData.expenses}
-            initialCursor={expensesData.nextCursor}
-            filters={filters}
-          />
-        </section>
+        <Suspense key={filtersKey} fallback={<ExpensesListSkeleton />}>
+          <ExpensesListSection filters={filters} />
+        </Suspense>
       </div>
     </div>
   );

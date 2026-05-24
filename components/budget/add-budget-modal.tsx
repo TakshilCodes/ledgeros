@@ -193,7 +193,7 @@ export default function AddBudgetModal() {
                         setCategory("");
                       }
                     }}
-                    className={`min-h-[104px] rounded-2xl border p-4 text-left transition ${
+                    className={`min-h-26 rounded-2xl border p-4 text-left transition ${
                       isSelected
                         ? "border-[#238636] bg-[#238636]/10 shadow-[0_0_0_1px_rgba(35,134,54,0.35)]"
                         : "border-[#3D444D] bg-[#151B23] hover:border-[#58A6FF]/50 hover:bg-[#21262D]"
@@ -346,7 +346,7 @@ export default function AddBudgetModal() {
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-5 text-sm font-semibold text-white transition hover:bg-[#2EA043] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center cursor-pointer gap-2 rounded-xl bg-[#238636] px-5 text-sm font-semibold text-white transition hover:bg-[#2EA043] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? (
                 <Loader2 size={16} className="animate-spin" />
