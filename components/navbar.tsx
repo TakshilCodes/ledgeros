@@ -96,7 +96,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setOpen((prev) => !prev)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
+              className="flex h-10 w-10 items-center justify-center cursor-pointer rounded-xl border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
             >
               <User size={18} />
             </button>
@@ -107,7 +107,7 @@ export default function Navbar() {
                 <Link
                   href="/dashboard/settings"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
+                  className="flex items-center cursor-pointer gap-3 px-4 py-3 text-sm text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
                 >
                   <Settings size={17} />
                   Settings
@@ -116,7 +116,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                  className="flex w-full items-center cursor-pointer gap-3 px-4 py-3 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
                 >
                   <LogOut size={17} />
                   Logout

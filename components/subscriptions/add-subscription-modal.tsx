@@ -315,7 +315,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                     <button
                         type="button"
                         onClick={closeModal}
-                        className="rounded-lg border border-[#3D444D] bg-[#151B23] p-2 text-[#8B949E] transition hover:text-white"
+                        className="rounded-lg border border-[#3D444D] bg-[#151B23] p-2 text-[#8B949E] transition hover:text-white cursor-pointer"
                     >
                         <X size={17} />
                     </button>
@@ -342,7 +342,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                             <button
                                 type="button"
                                 onClick={chooseCustom}
-                                className="flex w-full items-center gap-4 rounded-xl border border-[#3D444D] bg-[#151B23] p-4 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
+                                className="flex w-full items-center cursor-pointer gap-4 rounded-xl border border-[#3D444D] bg-[#151B23] p-4 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
                             >
                                 <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#3D444D] bg-[#010409] text-[#58A6FF]">
                                     <Plus size={20} />

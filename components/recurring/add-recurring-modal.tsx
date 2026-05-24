@@ -76,6 +76,7 @@ export default function AddRecurringModal() {
   const [isActive, setIsActive] = useState(true);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   function resetForm() {
     setName("");
@@ -85,6 +86,7 @@ export default function AddRecurringModal() {
     setNextDueDate(undefined);
     setNote("");
     setIsActive(true);
+    setError("");
   }
 
   function handleClose() {
@@ -96,18 +98,20 @@ export default function AddRecurringModal() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    setError("");
+
     if (!name.trim()) {
-      alert("Name is required");
+      setError("Name is required");
       return;
     }
 
     if (!amount || Number(amount) <= 0) {
-      alert("Amount must be greater than 0");
+      setError("Amount must be greater than 0");
       return;
     }
 
     if (!nextDueDate) {
-      alert("Next due date is required");
+      setError("Next due date is required");
       return;
     }
 
@@ -129,7 +133,7 @@ export default function AddRecurringModal() {
     setIsSubmitting(false);
 
     if (!res.ok) {
-      alert(res.error);
+      setError(res.error || "Something went wrong");
       return;
     }
 
@@ -148,6 +152,11 @@ export default function AddRecurringModal() {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="mt-3 space-y-4">
+          {error && (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#C9D1D9]">
               Name
@@ -186,7 +195,7 @@ export default function AddRecurringModal() {
               <select
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF] cursor-pointer"
               >
                 {categories.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -208,7 +217,7 @@ export default function AddRecurringModal() {
                   setBillingCycle(event.target.value);
                   setNextDueDate(undefined);
                 }}
-                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF] cursor-pointer"
               >
                 {billingCycles.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -227,7 +236,7 @@ export default function AddRecurringModal() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-11 w-full items-center justify-between rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-left text-sm text-white outline-none hover:border-[#58A6FF]"
+                    className="flex h-11 w-full items-center justify-between cursor-pointer rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-left text-sm text-white outline-none hover:border-[#58A6FF]"
                   >
                     {nextDueDate ? (
                       format(nextDueDate, "dd MMM yyyy")
@@ -287,14 +296,12 @@ export default function AddRecurringModal() {
             <button
               type="button"
               onClick={() => setIsActive((prev) => !prev)}
-              className={`relative h-6 w-11 rounded-full transition ${
-                isActive ? "bg-[#238636]" : "bg-[#3D444D]"
-              }`}
+              className={`relative h-6 w-11 rounded-full transition cursor-pointer ${isActive ? "bg-[#238636]" : "bg-[#3D444D]"
+                }`}
             >
               <span
-                className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${
-                  isActive ? "left-6" : "left-1"
-                }`}
+                className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${isActive ? "left-6" : "left-1"
+                  }`}
               />
             </button>
           </div>
@@ -304,7 +311,7 @@ export default function AddRecurringModal() {
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center cursor-pointer gap-2 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <X size={16} />
               Cancel
@@ -313,7 +320,7 @@ export default function AddRecurringModal() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 text-sm font-medium text-white transition hover:bg-[#2ea043] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center cursor-pointer gap-2 rounded-xl bg-[#238636] px-4 text-sm font-medium text-white transition hover:bg-[#2ea043] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <Loader2 size={16} className="animate-spin" />

@@ -193,7 +193,7 @@ export default function AddBudgetModal() {
                         setCategory("");
                       }
                     }}
-                    className={`min-h-26 rounded-2xl border p-4 text-left transition ${
+                    className={`min-h-26 rounded-2xl border p-4 text-left transition cursor-pointer ${
                       isSelected
                         ? "border-[#238636] bg-[#238636]/10 shadow-[0_0_0_1px_rgba(35,134,54,0.35)]"
                         : "border-[#3D444D] bg-[#151B23] hover:border-[#58A6FF]/50 hover:bg-[#21262D]"
@@ -274,7 +274,7 @@ export default function AddBudgetModal() {
                 id="budget-category"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                className="h-12 w-full rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-12 w-full rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
               >
                 <option value="">Select category</option>
 
@@ -300,7 +300,7 @@ export default function AddBudgetModal() {
                 id="budget-month"
                 value={month}
                 onChange={(event) => setMonth(event.target.value)}
-                className="h-12 w-full rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-12 w-full rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
               >
                 {getMonthOptions().map((item) => (
                   <option key={item.value} value={item.value}>
@@ -322,7 +322,7 @@ export default function AddBudgetModal() {
                 id="budget-year"
                 value={year}
                 onChange={(event) => setYear(event.target.value)}
-                className="h-12 w-full rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-12 w-full rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
               >
                 {getYearOptions().map((item) => (
                   <option key={item} value={item}>
@@ -338,7 +338,7 @@ export default function AddBudgetModal() {
               type="button"
               disabled={isPending}
               onClick={handleClose}
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23] px-5 text-sm font-semibold text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center cursor-pointer rounded-xl border border-[#3D444D] bg-[#151B23] px-5 text-sm font-semibold text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>

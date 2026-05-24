@@ -219,7 +219,7 @@ export default function AddExpenseModal() {
                             <PopoverTrigger asChild>
                                 <button
                                     className={cn(
-                                        "flex h-12 w-full items-center justify-between rounded-xl border border-[#3D444D] bg-[#010409] px-4 text-sm text-white transition hover:border-[#4B5563]",
+                                        "flex h-12 w-full items-center justify-between cursor-pointer rounded-xl border border-[#3D444D] bg-[#010409] px-4 text-sm text-white transition hover:border-[#4B5563]",
                                         !date && "text-[#6E7681]"
                                     )}
                                 >

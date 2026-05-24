@@ -723,7 +723,7 @@ function SubscriptionMenu({
         onClick={() => {
           setOpenMenuId(isMenuOpen ? null : subscription.id);
         }}
-        className="relative z-50 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
+        className="relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
       >
         <MoreVertical size={17} />
       </button>
