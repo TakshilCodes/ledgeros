@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import { getCache, setCache } from "@/lib/cache";
 
 type GetDashboardInput = {
   month?: number;
@@ -181,6 +182,18 @@ export async function getDashboardData(input?: GetDashboardInput) {
         ok: false,
         error: "Invalid year",
         data: null,
+      };
+    }
+
+    const cacheKey = `dashboard:${userId}:${month}:${year}`;
+
+    const cachedDashboard = await getCache(cacheKey);
+
+    if (cachedDashboard) {
+      return {
+        ok: true,
+        error: null,
+        data: cachedDashboard,
       };
     }
 
@@ -420,10 +433,10 @@ export async function getDashboardData(input?: GetDashboardInput) {
 
     const topCategory = topCategoryGroup
       ? {
-          category: topCategoryGroup.category,
-          label: formatCategory(topCategoryGroup.category),
-          amount: Number(topCategoryGroup._sum.amount || 0),
-        }
+        category: topCategoryGroup.category,
+        label: formatCategory(topCategoryGroup.category),
+        amount: Number(topCategoryGroup._sum.amount || 0),
+      }
       : null;
 
     const categoryBreakdown = categoryGroups.map((group) => {
@@ -471,10 +484,10 @@ export async function getDashboardData(input?: GetDashboardInput) {
 
     let alert:
       | {
-          type: "success" | "warning" | "danger" | "info";
-          title: string;
-          message: string;
-        }
+        type: "success" | "warning" | "danger" | "info";
+        title: string;
+        message: string;
+      }
       | null = null;
 
     if (dailyLimitAmount > 0) {
@@ -551,91 +564,99 @@ export async function getDashboardData(input?: GetDashboardInput) {
 
     const noSpendStreak = noSpendDays.filter((day) => day.isNoSpendDay).length;
 
+    const dashboardData = {
+      month,
+      year,
+
+      summaryCards: {
+        todaySpend: {
+          title: "Today's Spend",
+          value: todaySpend,
+          formattedValue: formatCurrency(todaySpend),
+          subtitle: `vs yesterday ${formatCurrency(yesterdaySpend)}`,
+        },
+
+        thisMonthSpend: {
+          title: "This Month's Spend",
+          value: thisMonthSpend,
+          formattedValue: formatCurrency(thisMonthSpend),
+          subtitle: `vs last month ${formatCurrency(previousMonthSpend)}`,
+        },
+
+        subscriptionsTotal: {
+          title: "Subscriptions Total",
+          value: Math.round(subscriptionsMonthlyTotal),
+          formattedValue: `${formatCurrency(subscriptionsMonthlyTotal)} /month`,
+          subtitle: `${activeSubscriptions.length} active`,
+        },
+
+        budgetLeft: {
+          title: budgetLeft >= 0 ? "Budget Left" : "Over Budget",
+          value: Math.abs(budgetLeft),
+          formattedValue: formatCurrency(Math.abs(budgetLeft)),
+          subtitle:
+            monthlyBudgetAmount > 0
+              ? `${budgetUsedPercentage}% of ${formatCurrency(
+                monthlyBudgetAmount
+              )} used`
+              : "No monthly budget set",
+          isOverBudget: budgetLeft < 0,
+        },
+      },
+
+      alert,
+
+      expenseOverview: {
+        totalSpent: thisMonthSpend,
+        categoryBreakdown,
+      },
+
+      recentExpenses: recentExpenses.map((expense) => ({
+        id: expense.id,
+        name: expense.name,
+        category: expense.category,
+        label: formatCategory(expense.category),
+        amount: Number(expense.amount),
+        formattedAmount: formatCurrency(Number(expense.amount)),
+        spentAt: expense.spentAt.toISOString(),
+      })),
+
+      upcomingRenewals: upcomingRenewals.map((subscription) => ({
+        id: subscription.id,
+        name: subscription.name,
+        planName: subscription.planName,
+        amount: Number(subscription.amount),
+        formattedAmount: formatCurrency(Number(subscription.amount)),
+        billingCycle: subscription.billingCycle,
+        nextRenewalDate: subscription.nextRenewalDate.toISOString(),
+        due: getDaysLeftText(subscription.nextRenewalDate),
+      })),
+
+      categoryBudgets,
+
+      noSpend: {
+        streak: noSpendStreak,
+        days: noSpendDays,
+      },
+
+      meta: {
+        expenseCount,
+        activeSubscriptionCount: activeSubscriptions.length,
+        hasMonthlyBudget: Boolean(monthlyBudget),
+        hasDailyLimit: Boolean(dailyLimitBudget),
+      },
+    };
+
+    await setCache({
+      key: cacheKey,
+      value: dashboardData,
+      ttlSeconds: 300,
+    });
+
     return {
       ok: true,
       error: null,
-      data: {
-        month,
-        year,
-
-        summaryCards: {
-          todaySpend: {
-            title: "Today's Spend",
-            value: todaySpend,
-            formattedValue: formatCurrency(todaySpend),
-            subtitle: `vs yesterday ${formatCurrency(yesterdaySpend)}`,
-          },
-
-          thisMonthSpend: {
-            title: "This Month's Spend",
-            value: thisMonthSpend,
-            formattedValue: formatCurrency(thisMonthSpend),
-            subtitle: `vs last month ${formatCurrency(previousMonthSpend)}`,
-          },
-
-          subscriptionsTotal: {
-            title: "Subscriptions Total",
-            value: Math.round(subscriptionsMonthlyTotal),
-            formattedValue: `${formatCurrency(subscriptionsMonthlyTotal)} /month`,
-            subtitle: `${activeSubscriptions.length} active`,
-          },
-
-          budgetLeft: {
-            title: budgetLeft >= 0 ? "Budget Left" : "Over Budget",
-            value: Math.abs(budgetLeft),
-            formattedValue: formatCurrency(Math.abs(budgetLeft)),
-            subtitle:
-              monthlyBudgetAmount > 0
-                ? `${budgetUsedPercentage}% of ${formatCurrency(
-                    monthlyBudgetAmount
-                  )} used`
-                : "No monthly budget set",
-            isOverBudget: budgetLeft < 0,
-          },
-        },
-
-        alert,
-
-        expenseOverview: {
-          totalSpent: thisMonthSpend,
-          categoryBreakdown,
-        },
-
-        recentExpenses: recentExpenses.map((expense) => ({
-          id: expense.id,
-          name: expense.name,
-          category: expense.category,
-          label: formatCategory(expense.category),
-          amount: Number(expense.amount),
-          formattedAmount: formatCurrency(Number(expense.amount)),
-          spentAt: expense.spentAt.toISOString(),
-        })),
-
-        upcomingRenewals: upcomingRenewals.map((subscription) => ({
-          id: subscription.id,
-          name: subscription.name,
-          planName: subscription.planName,
-          amount: Number(subscription.amount),
-          formattedAmount: formatCurrency(Number(subscription.amount)),
-          billingCycle: subscription.billingCycle,
-          nextRenewalDate: subscription.nextRenewalDate.toISOString(),
-          due: getDaysLeftText(subscription.nextRenewalDate),
-        })),
-
-        categoryBudgets,
-
-        noSpend: {
-          streak: noSpendStreak,
-          days: noSpendDays,
-        },
-
-        meta: {
-          expenseCount,
-          activeSubscriptionCount: activeSubscriptions.length,
-          hasMonthlyBudget: Boolean(monthlyBudget),
-          hasDailyLimit: Boolean(dailyLimitBudget),
-        },
-      },
+      data: dashboardData,
     };
   } catch (error) {
     console.error("GET_DASHBOARD_DATA_ERROR", error);

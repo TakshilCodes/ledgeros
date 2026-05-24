@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import { getCache, setCache } from "@/lib/cache";
 
 type GetInsightsInput = {
   month?: number;
@@ -91,6 +92,7 @@ export async function getInsights(input?: GetInsightsInput) {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
+    const INSIGHTS_CACHE_TTL = 60 * 10;
 
     if (!userId) {
       return {
@@ -118,6 +120,18 @@ export async function getInsights(input?: GetInsightsInput) {
         ok: false,
         error: "Invalid year",
         data: null,
+      };
+    }
+
+    const cacheKey = `insights:${userId}:${month}:${year}`;
+
+    const cachedInsights = await getCache(cacheKey);
+
+    if (cachedInsights) {
+      return {
+        ok: true,
+        error: null,
+        data: cachedInsights,
       };
     }
 
@@ -288,12 +302,12 @@ export async function getInsights(input?: GetInsightsInput) {
 
     const budgetStatus = monthlyBudget
       ? {
-          totalBudget: monthlyBudgetAmount,
-          totalSpent,
-          remaining: budgetRemaining,
-          usedPercentage: budgetUsedPercentage,
-          isOverBudget: budgetRemaining < 0,
-        }
+        totalBudget: monthlyBudgetAmount,
+        totalSpent,
+        remaining: budgetRemaining,
+        usedPercentage: budgetUsedPercentage,
+        isOverBudget: budgetRemaining < 0,
+      }
       : null;
 
     const categoryBudgetMap = new Map<
@@ -528,43 +542,49 @@ export async function getInsights(input?: GetInsightsInput) {
         category: recurring.category,
       }));
 
+    const insightsData = {
+      month,
+      year,
+
+      summary: {
+        totalSpent,
+        highestCategory,
+        activeSubscriptionMonthlyCost: Math.round(activeSubscriptionMonthlyCost),
+        recurringMonthlyCost: Math.round(recurringMonthlyCost),
+        averageDailySpend,
+        subscriptionShare,
+        recurringShare,
+      },
+
+      categoryBreakdown,
+
+      budgetStatus,
+      categoryBudgetStatus,
+
+      upcomingSubscriptions,
+      upcomingRecurringExpenses,
+
+      recentExpenses: recentExpenses.map((expense) => ({
+        id: expense.id,
+        name: expense.name,
+        amount: Number(expense.amount),
+        category: expense.category,
+        spentAt: expense.spentAt.toISOString(),
+      })),
+
+      insights,
+    };
+
+    await setCache({
+      key: cacheKey,
+      value: insightsData,
+      ttlSeconds: INSIGHTS_CACHE_TTL,
+    });
+
     return {
       ok: true,
       error: null,
-      data: {
-        month,
-        year,
-
-        summary: {
-          totalSpent,
-          highestCategory,
-          activeSubscriptionMonthlyCost: Math.round(
-            activeSubscriptionMonthlyCost
-          ),
-          recurringMonthlyCost: Math.round(recurringMonthlyCost),
-          averageDailySpend,
-          subscriptionShare,
-          recurringShare,
-        },
-
-        categoryBreakdown,
-
-        budgetStatus,
-        categoryBudgetStatus,
-
-        upcomingSubscriptions,
-        upcomingRecurringExpenses,
-
-        recentExpenses: recentExpenses.map((expense) => ({
-          id: expense.id,
-          name: expense.name,
-          amount: Number(expense.amount),
-          category: expense.category,
-          spentAt: expense.spentAt.toISOString(),
-        })),
-
-        insights,
-      },
+      data: insightsData,
     };
   } catch (error) {
     console.error("GET_INSIGHTS_ERROR", error);

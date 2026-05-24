@@ -6,6 +6,7 @@ import { ExpenseCategory } from "@/app/generated/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { deleteCacheByPattern } from "@/lib/cache";
 
 type data = {
     name: string;
@@ -50,6 +51,9 @@ export async function Addexpense(data: data) {
                 spentAt: data.spentAt
             }
         })
+
+        await deleteCacheByPattern(`dashboard:${userId}:*`);
+        await deleteCacheByPattern(`insights:${userId}:*`);
 
         revalidatePath("/dashboard/expenses");
         revalidatePath("/dashboard");

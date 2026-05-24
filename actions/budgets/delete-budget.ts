@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
+import { deleteCacheByPattern } from "@/lib/cache";
 
 export async function deleteBudget(id: string) {
   try {
@@ -49,6 +50,9 @@ export async function deleteBudget(id: string) {
         id: budget.id,
       },
     });
+
+    await deleteCacheByPattern(`dashboard:${userId}:*`);
+    await deleteCacheByPattern(`insights:${userId}:*`);
 
     revalidatePath("/dashboard/budgets");
     revalidatePath("/dashboard");

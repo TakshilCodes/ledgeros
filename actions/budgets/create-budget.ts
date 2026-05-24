@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { BudgetType, ExpenseCategory } from "@/app/generated/prisma/client";
+import { deleteCacheByPattern } from "@/lib/cache";
 
 type CreateBudgetInput = {
   name?: string;
@@ -117,6 +118,9 @@ export async function createBudget(data: CreateBudgetInput) {
         year,
       },
     });
+
+    await deleteCacheByPattern(`dashboard:${userId}:*`);
+    await deleteCacheByPattern(`insights:${userId}:*`);
 
     revalidatePath("/dashboard/budgets");
     revalidatePath("/dashboard");

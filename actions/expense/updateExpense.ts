@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { AddExpenseZod } from "@/lib/validators/addexpense";
+import { deleteCacheByPattern } from "@/lib/cache";
 
 export async function updateExpense(id: string, data: unknown) {
   try {
@@ -55,6 +56,9 @@ export async function updateExpense(id: string, data: unknown) {
         spentAt: valid.data.spentAt,
       },
     });
+
+    await deleteCacheByPattern(`dashboard:${userId}:*`);
+    await deleteCacheByPattern(`insights:${userId}:*`);
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/expenses");

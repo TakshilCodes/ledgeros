@@ -6,6 +6,7 @@ import { z } from "zod";
 import { BillingCycle, RecurringCategory } from "@/app/generated/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { deleteCacheByPattern } from "@/lib/cache";
 
 const UpdateRecurringSchema = z.object({
   id: z.string().min(1, "Recurring expense ID is required"),
@@ -147,6 +148,9 @@ export async function updateRecurring(data: UpdateRecurringInput) {
         isActive,
       },
     });
+
+    await deleteCacheByPattern(`dashboard:${session.user.id}:*`);
+    await deleteCacheByPattern(`insights:${session.user.id}:*`);
 
     revalidatePath("/dashboard/recurring");
     revalidatePath("/dashboard");

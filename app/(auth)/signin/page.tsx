@@ -278,13 +278,6 @@ export default function SignInPage() {
                     <label className="block text-sm font-medium text-[#C9D1D9]">
                       Password
                     </label>
-
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs font-medium text-[#58A6FF] transition hover:text-[#79C0FF]"
-                    >
-                      Forgot password?
-                    </Link>
                   </div>
 
                   <div className="relative">

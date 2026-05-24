@@ -6,6 +6,7 @@ import { BillingCycle } from "@/app/generated/prisma/client";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { deleteCacheByPattern } from "@/lib/cache";
 
 function getMaxAllowedRenewalDate(billingCycle: string) {
     const maxDate = new Date();
@@ -160,6 +161,9 @@ export async function createSubscription(data: CreateSubscriptionInput) {
                 id: true,
             },
         });
+
+        await deleteCacheByPattern(`dashboard:${session.user.id}:*`);
+        await deleteCacheByPattern(`insights:${session.user.id}:*`);
 
         revalidatePath("/dashboard/subscriptions");
         revalidatePath("/dashboard");

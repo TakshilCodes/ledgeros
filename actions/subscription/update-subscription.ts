@@ -2,6 +2,7 @@
 
 import { BillingCycle } from "@/app/generated/prisma/client";
 import { authOptions } from "@/lib/auth";
+import { deleteCacheByPattern } from "@/lib/cache";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -143,6 +144,9 @@ export async function updateSubscription(
         isActive,
       },
     });
+
+    await deleteCacheByPattern(`dashboard:${userId}:*`);
+    await deleteCacheByPattern(`insights:${userId}:*`);
 
     revalidatePath("/dashboard/subscriptions");
     revalidatePath("/dashboard");

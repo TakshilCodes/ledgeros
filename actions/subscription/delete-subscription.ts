@@ -1,6 +1,7 @@
 "use server";
 
 import { authOptions } from "@/lib/auth";
+import { deleteCacheByPattern } from "@/lib/cache";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -49,6 +50,9 @@ export async function deleteSubscription(id: string) {
         id: subscription.id,
       },
     });
+
+    await deleteCacheByPattern(`dashboard:${session.user.id}:*`);
+    await deleteCacheByPattern(`insights:${session.user.id}:*`);
 
     revalidatePath("/dashboard/subscriptions");
     revalidatePath("/dashboard");
