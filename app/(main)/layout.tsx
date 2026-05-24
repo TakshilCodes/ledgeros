@@ -11,7 +11,7 @@ export default function DashboardLayout({
     <div>
       <Sidebar />
 
-      <main className="ml-22 min-h-screen md:ml-65">
+      <main className="ml-22 h-screen overflow-y-auto scrollbar-hide md:ml-65">
         <Navbar />
 
         <AddExpenseModal />
