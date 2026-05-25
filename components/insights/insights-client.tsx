@@ -18,98 +18,13 @@ import {
     Wallet,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import type { InsightsData } from "@/actions/insights/get-insights";
 
-type InsightType = "success" | "warning" | "danger" | "info";
-
-type Insight = {
-    type: InsightType;
-    title: string;
-    message: string;
-};
-
-type CategoryBreakdown = {
-    category: string;
-    label: string;
-    amount: number;
-    percentage: number;
-};
-
-type HighestCategory = {
-    category: string;
-    label: string;
-    amount: number;
-    percentage: number;
-} | null;
-
-type BudgetStatus = {
-    totalBudget: number;
-    totalSpent: number;
-    remaining: number;
-    usedPercentage: number;
-    isOverBudget: boolean;
-} | null;
-
-type CategoryBudgetStatus = {
-    category: string;
-    label: string;
-    spent: number;
-    budget: number | null;
-    remaining: number | null;
-    usedPercentage: number | null;
-    isOverBudget: boolean;
-};
-
-type UpcomingSubscription = {
-    id: string;
-    name: string;
-    amount: number;
-    billingCycle: string;
-    nextRenewalDate: string;
-    category: string;
-};
-
-type UpcomingRecurringExpense = {
-    id: string;
-    name: string;
-    amount: number;
-    billingCycle: string;
-    nextDueDate: string;
-    category: string;
-};
-
-type RecentExpense = {
-    id: string;
-    name: string;
-    amount: number;
-    category: string;
-    spentAt: string;
-};
-
-type InsightsData = {
-    month: number;
-    year: number;
-    summary: {
-        totalSpent: number;
-        highestCategory: HighestCategory;
-        activeSubscriptionMonthlyCost: number;
-        recurringMonthlyCost: number;
-        averageDailySpend: number;
-        subscriptionShare: number;
-        recurringShare: number;
-    };
-    categoryBreakdown: CategoryBreakdown[];
-    budgetStatus: BudgetStatus;
-    categoryBudgetStatus: CategoryBudgetStatus[];
-    upcomingSubscriptions: UpcomingSubscription[];
-    upcomingRecurringExpenses: UpcomingRecurringExpense[];
-    recentExpenses: RecentExpense[];
-    insights: Insight[];
-} | null;
 
 type Props = {
     data: InsightsData;
-    selectedMonth: number;
-    selectedYear: number;
+  selectedMonth: number;
+  selectedYear: number;
 };
 
 const monthOptions = [
@@ -184,7 +99,7 @@ function getNextMonth(month: number, year: number) {
     };
 }
 
-function getInsightStyle(type: InsightType) {
+function getInsightStyle(type: string) {
     if (type === "danger") {
         return {
             icon: AlertTriangle,

@@ -8,8 +8,6 @@ import {
     ChevronDown,
     CreditCard,
     Flame,
-    Grid2X2,
-    IndianRupee,
     PiggyBank,
     ReceiptText,
     TrendingUp,
@@ -17,116 +15,9 @@ import {
     Wallet,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { SpendingBarChart, SpendingDonutChart } from "./dashboard-charts";
 import { useSession } from "next-auth/react";
-
-type DashboardAlert = {
-    type: "success" | "warning" | "danger" | "info";
-    title: string;
-    message: string;
-} | null;
-
-type CategoryBreakdown = {
-    category: string;
-    label: string;
-    amount: number;
-    percentage: number;
-};
-
-type RecentExpense = {
-    id: string;
-    name: string;
-    category: string;
-    label: string;
-    amount: number;
-    formattedAmount: string;
-    spentAt: string;
-};
-
-type UpcomingRenewal = {
-    id: string;
-    name: string;
-    planName: string | null;
-    amount: number;
-    formattedAmount: string;
-    billingCycle: string;
-    nextRenewalDate: string;
-    due: string;
-};
-
-type CategoryBudget = {
-    id: string;
-    name: string;
-    category: string | null;
-    label: string;
-    amount: number;
-    spent: number;
-    remaining: number;
-    usedPercentage: number;
-};
-
-type DashboardData = {
-    month: number;
-    year: number;
-
-    summaryCards: {
-        todaySpend: {
-            title: string;
-            value: number;
-            formattedValue: string;
-            subtitle: string;
-        };
-        thisMonthSpend: {
-            title: string;
-            value: number;
-            formattedValue: string;
-            subtitle: string;
-        };
-        subscriptionsTotal: {
-            title: string;
-            value: number;
-            formattedValue: string;
-            subtitle: string;
-        };
-        budgetLeft: {
-            title: string;
-            value: number;
-            formattedValue: string;
-            subtitle: string;
-            isOverBudget: boolean;
-        };
-    };
-
-    alert: DashboardAlert;
-
-    expenseOverview: {
-        totalSpent: number;
-        categoryBreakdown: CategoryBreakdown[];
-    };
-
-    recentExpenses: RecentExpense[];
-    upcomingRenewals: UpcomingRenewal[];
-    categoryBudgets: CategoryBudget[];
-
-    meta: {
-        expenseCount: number;
-        activeSubscriptionCount: number;
-        hasMonthlyBudget: boolean;
-        hasDailyLimit: boolean;
-    };
-
-    noSpend: {
-        streak: number;
-        days: {
-            label: string;
-            date: string;
-            isFuture: boolean;
-            hasExpense: boolean;
-            isNoSpendDay: boolean;
-        }[];
-    };
-} | null;
+import { DashboardData } from "@/types/dashboard";
 
 type Props = {
     data: DashboardData;
@@ -153,34 +44,6 @@ function getExpenseIcon(category: string) {
     if (category === "TRAVEL") return Car;
 
     return ReceiptText;
-}
-
-function MonthSelect({
-    value,
-    onChange,
-}: {
-    value: string;
-    onChange: (value: string) => void;
-}) {
-    return (
-        <div className="relative shrink-0">
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="h-8 cursor-pointer appearance-none rounded-lg border border-[#3D444D] bg-[#151B23] px-3 pr-8 text-xs text-[#C9D1D9] outline-none transition hover:bg-[#1f2630] focus:border-[#238636]"
-            >
-                <option value="this-month">This Month</option>
-                <option value="last-month">Last Month</option>
-                <option value="last-3-months">Last 3 Months</option>
-                <option value="this-year">This Year</option>
-            </select>
-
-            <ChevronDown
-                size={14}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8B949E]"
-            />
-        </div>
-    );
 }
 
 function EmptyBlock({

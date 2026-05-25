@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { getCache, setCache } from "@/lib/cache";
+import { DashboardData } from "@/types/dashboard";
 
 type GetDashboardInput = {
   month?: number;
@@ -187,7 +188,7 @@ export async function getDashboardData(input?: GetDashboardInput) {
 
     const cacheKey = `dashboard:${userId}:${month}:${year}`;
 
-    const cachedDashboard = await getCache(cacheKey);
+    const cachedDashboard = await getCache<DashboardData>(cacheKey);
 
     if (cachedDashboard) {
       return {
@@ -564,10 +565,9 @@ export async function getDashboardData(input?: GetDashboardInput) {
 
     const noSpendStreak = noSpendDays.filter((day) => day.isNoSpendDay).length;
 
-    const dashboardData = {
+    const dashboardData: DashboardData = {
       month,
       year,
-
       summaryCards: {
         todaySpend: {
           title: "Today's Spend",
@@ -596,21 +596,17 @@ export async function getDashboardData(input?: GetDashboardInput) {
           formattedValue: formatCurrency(Math.abs(budgetLeft)),
           subtitle:
             monthlyBudgetAmount > 0
-              ? `${budgetUsedPercentage}% of ${formatCurrency(
-                monthlyBudgetAmount
-              )} used`
+              ? `${budgetUsedPercentage}% of ${formatCurrency(monthlyBudgetAmount)} used`
               : "No monthly budget set",
           isOverBudget: budgetLeft < 0,
         },
       },
 
       alert,
-
       expenseOverview: {
         totalSpent: thisMonthSpend,
         categoryBreakdown,
       },
-
       recentExpenses: recentExpenses.map((expense) => ({
         id: expense.id,
         name: expense.name,
@@ -620,7 +616,6 @@ export async function getDashboardData(input?: GetDashboardInput) {
         formattedAmount: formatCurrency(Number(expense.amount)),
         spentAt: expense.spentAt.toISOString(),
       })),
-
       upcomingRenewals: upcomingRenewals.map((subscription) => ({
         id: subscription.id,
         name: subscription.name,
@@ -631,14 +626,11 @@ export async function getDashboardData(input?: GetDashboardInput) {
         nextRenewalDate: subscription.nextRenewalDate.toISOString(),
         due: getDaysLeftText(subscription.nextRenewalDate),
       })),
-
       categoryBudgets,
-
       noSpend: {
         streak: noSpendStreak,
         days: noSpendDays,
       },
-
       meta: {
         expenseCount,
         activeSubscriptionCount: activeSubscriptions.length,

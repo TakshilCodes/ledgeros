@@ -12,6 +12,83 @@ type GetInsightsInput = {
 
 type InsightType = "success" | "warning" | "danger" | "info";
 
+export type InsightsData = {
+  month: number;
+  year: number;
+
+  summary: {
+    totalSpent: number;
+    highestCategory: {
+      category: string;
+      label: string;
+      amount: number;
+      percentage: number;
+    } | null;
+    activeSubscriptionMonthlyCost: number;
+    recurringMonthlyCost: number;
+    averageDailySpend: number;
+    subscriptionShare: number;
+    recurringShare: number;
+  };
+
+  categoryBreakdown: {
+    category: string;
+    label: string;
+    amount: number;
+    percentage: number;
+  }[];
+
+  budgetStatus: {
+    totalBudget: number;
+    totalSpent: number;
+    remaining: number;
+    usedPercentage: number;
+    isOverBudget: boolean;
+  } | null;
+
+  categoryBudgetStatus: {
+    category: string;
+    label: string;
+    spent: number;
+    budget: number | null;
+    remaining: number | null;
+    usedPercentage: number | null;
+    isOverBudget: boolean;
+  }[];
+
+  upcomingSubscriptions: {
+    id: string;
+    name: string;
+    amount: number;
+    billingCycle: string;
+    nextRenewalDate: string;
+    category: string;
+  }[];
+
+  upcomingRecurringExpenses: {
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+    billingCycle: string;
+    nextDueDate: string;
+  }[];
+
+  recentExpenses: {
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+    spentAt: string;
+  }[];
+
+  insights: {
+    type: string;
+    title: string;
+    message: string;
+  }[];
+};
+
 function getCurrentMonthYear() {
   const now = new Date();
 
@@ -125,7 +202,7 @@ export async function getInsights(input?: GetInsightsInput) {
 
     const cacheKey = `insights:${userId}:${month}:${year}`;
 
-    const cachedInsights = await getCache(cacheKey);
+    const cachedInsights = await getCache<InsightsData>(cacheKey);
 
     if (cachedInsights) {
       return {
@@ -542,7 +619,7 @@ export async function getInsights(input?: GetInsightsInput) {
         category: recurring.category,
       }));
 
-    const insightsData = {
+    const insightsData: InsightsData = {
       month,
       year,
 

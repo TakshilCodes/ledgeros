@@ -17,15 +17,23 @@ export default async function InsightsPage({ searchParams }: Props) {
   const year = Number(params.year || currentDate.getFullYear());
 
   const result = await getInsights({
-    month,
-    year,
-  });
+  month,
+  year,
+});
 
+if (!result.ok || !result.data) {
   return (
-    <InsightsClient
-      data={result.data}
-      selectedMonth={month}
-      selectedYear={year}
-    />
+    <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+      {result.error || "Failed to load insights"}
+    </div>
   );
+}
+
+return (
+  <InsightsClient
+    data={result.data}
+    selectedMonth={month}
+    selectedYear={year}
+  />
+);
 }

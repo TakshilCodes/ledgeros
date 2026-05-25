@@ -35,7 +35,7 @@ export async function deleteCacheByPattern(pattern: string) {
 
     if (keys.length === 0) return;
 
-    await redis.del(keys);
+    await redis.del(...keys);
   } catch (error) {
     console.error("Redis delete cache error:", error);
   }
