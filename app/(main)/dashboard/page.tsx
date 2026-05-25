@@ -38,16 +38,17 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   if (!result.ok || !result.data) {
     return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
-        {result.error || "Failed to load dashboard"}
-      </div>
+      <section className="w-full min-w-0">
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+          {result.error || "Failed to load dashboard"}
+        </div>
+      </section>
     );
   }
 
   return (
-    <DashboardClient
-      data={result.data}
-      selectedRange={selectedRange}
-    />
+    <section className="w-full min-w-0 overflow-x-hidden">
+      <DashboardClient data={result.data} selectedRange={selectedRange} />
+    </section>
   );
 }

@@ -8,15 +8,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className="min-h-screen overflow-x-hidden bg-[#010409] text-white">
       <Sidebar />
 
-      <main className="ml-22 h-screen overflow-y-auto scrollbar-hide md:ml-65">
+      <main className="min-h-screen w-full overflow-x-hidden md:ml-65 md:w-[calc(100%-16.25rem)]">
         <Navbar />
 
         <AddExpenseModal />
 
-        <div className="p-4 md:p-6">{children}</div>
+        <div className="w-full min-w-0 overflow-x-hidden px-4 pb-24 pt-4 md:p-6">
+          {children}
+        </div>
       </main>
     </div>
   );

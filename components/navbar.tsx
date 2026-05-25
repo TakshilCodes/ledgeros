@@ -11,8 +11,10 @@ import {
   User,
   Settings,
   LogOut,
+  Menu,
 } from "lucide-react";
 import { useExpenseModal } from "@/store/expense-modal-store";
+import { useSidebarStore } from "@/store/sidebar-store";
 
 function getPageTitle(pathname: string) {
   if (pathname === "/dashboard") return "Dashboard";
@@ -35,7 +37,8 @@ export default function Navbar() {
 
   const [open, setOpen] = useState(false);
 
-  const { onOpen } = useExpenseModal();
+  const { onOpen: openExpenseModal } = useExpenseModal();
+  const { onOpen: openSidebar } = useSidebarStore();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -78,17 +81,14 @@ export default function Navbar() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
-
           {/* Add Expense */}
           <button
-            onClick={onOpen}
-            className="flex h-10 items-center cursor-pointer gap-2 rounded-xl bg-[#2ea043] px-3 text-sm font-semibold text-white transition hover:bg-[#238636] md:px-4"
+            onClick={openExpenseModal}
+            className="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#2ea043] px-3 text-sm font-semibold text-white transition hover:bg-[#238636] md:px-4"
           >
             <Plus size={18} />
 
-            <span className="hidden sm:inline">
-              Add Expense
-            </span>
+            <span className="hidden sm:inline">Add Expense</span>
           </button>
 
           {/* Profile Dropdown */}
@@ -96,18 +96,17 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setOpen((prev) => !prev)}
-              className="flex h-10 w-10 items-center justify-center cursor-pointer rounded-xl border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
             >
               <User size={18} />
             </button>
 
             {open && (
               <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-[#3D444D] bg-[#0D1117] shadow-2xl">
-
                 <Link
                   href="/dashboard/settings"
                   onClick={() => setOpen(false)}
-                  className="flex items-center cursor-pointer gap-3 px-4 py-3 text-sm text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
+                  className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
                 >
                   <Settings size={17} />
                   Settings
@@ -116,7 +115,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center cursor-pointer gap-3 px-4 py-3 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
                 >
                   <LogOut size={17} />
                   Logout
@@ -124,6 +123,16 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={openSidebar}
+            className="flex h-10 w-10 items-center justify-center rounded-xl cursor-pointer border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white md:hidden"
+            aria-label="Open sidebar"
+          >
+            <Menu size={18} />
+          </button>
         </div>
       </div>
     </header>

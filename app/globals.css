@@ -137,6 +137,10 @@ body {
   overflow-x: hidden;
 }
 
+body {
+  font-family: var(--font-geist), system-ui, sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }
