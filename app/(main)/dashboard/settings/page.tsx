@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import getServerSession from "next-auth";
+import { getServerSession } from "next-auth";
 
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
@@ -11,7 +11,7 @@ export default async function SettingsPage() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-        redirect("/sign-in");
+        redirect("/signin");
     }
 
     const user = await prisma.user.findUnique({
@@ -35,7 +35,7 @@ export default async function SettingsPage() {
     });
 
     if (!user) {
-        redirect("/sign-in");
+        redirect("/signin");
     }
 
     return (
