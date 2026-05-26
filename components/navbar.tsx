@@ -47,7 +47,7 @@ export default function Navbar() {
       redirect: false,
     });
 
-    router.push("/signin");
+    router.push("/");
     router.refresh();
   }
 

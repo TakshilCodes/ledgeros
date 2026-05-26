@@ -256,7 +256,7 @@ export default function SignUpPage() {
 
                     <input
                       type="text"
-                      placeholder="Takshil Pandya"
+                      placeholder="John snow"
                       value={data.displayName}
                       onChange={(event) =>
                         setData((prev) => ({

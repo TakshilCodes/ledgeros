@@ -66,7 +66,7 @@ export default function Sidebar() {
       redirect: false,
     });
 
-    router.push("/signin");
+    router.push("/");
     router.refresh();
   }
 
