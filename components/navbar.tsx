@@ -1,13 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
-import { LogOut, Menu, Plus, Settings, User } from "lucide-react";
+import { LogOut, Plus, Settings, User } from "lucide-react";
 
+import logo from "@/public/ledgerOS.png";
 import { useExpenseModal } from "@/store/expense-modal-store";
-import { useSidebarStore } from "@/store/sidebar-store";
 
 function getPageTitle(pathname: string) {
   if (pathname === "/dashboard") return "Dashboard";
@@ -15,7 +16,6 @@ function getPageTitle(pathname: string) {
   if (pathname.includes("/subscriptions")) return "Subscriptions";
   if (pathname.includes("/recurring")) return "Recurring";
   if (pathname.includes("/budgets")) return "Budgets";
-  if (pathname.includes("/search")) return "Search";
   if (pathname.includes("/insights")) return "Insights";
   if (pathname.includes("/settings")) return "Settings";
   return "LedgerOS";
@@ -26,7 +26,6 @@ export default function Navbar() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const { onOpen: openExpenseModal } = useExpenseModal();
-  const { onOpen: openSidebar } = useSidebarStore();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const showGlobalExpenseAction = pathname !== "/dashboard/expenses";
 
@@ -49,20 +48,13 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="flex h-full items-center justify-between gap-4 px-4 sm:px-5 md:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center gap-3">
-          <button
-            type="button"
-            onClick={openSidebar}
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
-            aria-label="Open navigation"
-          >
-            <Menu className="size-[18px]" />
-          </button>
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:hidden">LedgerOS</p>
-            <h1 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">{getPageTitle(pathname)}</h1>
-          </div>
-        </div>
+        <Link href="/dashboard" aria-label="LedgerOS dashboard" className="shrink-0 sm:hidden">
+          <Image src={logo} alt="LedgerOS" priority className="h-auto w-28 rounded-md" />
+        </Link>
+
+        <h1 className="hidden truncate text-xl font-semibold tracking-tight text-foreground sm:block">
+          {getPageTitle(pathname)}
+        </h1>
 
         <div className="flex items-center gap-2">
           {showGlobalExpenseAction ? (

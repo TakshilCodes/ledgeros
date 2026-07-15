@@ -35,6 +35,8 @@ import {
   LoadingSkeleton,
   StatusBadge,
 } from "@/components/ui/foundation";
+import { useConfirmation } from "@/components/ui/confirmation-dialog";
+import { ResponsiveFilterControls } from "@/components/ui/responsive-filter-controls";
 import { useRecurringModalStore } from "@/store/recurring-modal-store";
 
 type Props = {
@@ -171,6 +173,7 @@ export default function RecurringClient({
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { onOpen, onEditOpen } = useRecurringModalStore();
+  const { confirm } = useConfirmation();
 
   useEffect(() => {
     setRecurringExpenses(initialRecurringExpenses);
@@ -264,13 +267,24 @@ export default function RecurringClient({
     const markPaidState = getMarkPaidState(item.nextDueDate, item.billingCycle);
 
     if (!markPaidState.canMarkPaid) {
-      alert("You can mark this as paid only when its billing cycle starts.");
+      await confirm({
+        title: "Payment cycle has not started",
+        description:
+          "You can mark this payment as paid only after its current billing cycle begins.",
+        confirmLabel: "Got it",
+        cancelLabel: null,
+        tone: "warning",
+      });
       return;
     }
 
-    const confirmed = confirm(
-      `Mark "${item.name}" as paid?\n\nThis will create an expense and move the next due date forward.`
-    );
+    const confirmed = await confirm({
+      title: `Mark "${item.name}" as paid?`,
+      description:
+        "This creates an expense for the payment and moves its next due date forward.",
+      confirmLabel: "Mark as paid",
+      tone: "warning",
+    });
     if (!confirmed) return;
 
     setMarkingPaidId(item.id);
@@ -291,10 +305,16 @@ export default function RecurringClient({
   }
 
   async function handleDelete(id: string) {
-    const confirmDelete = confirm(
-      "Are you sure you want to delete this recurring expense?"
-    );
-    if (!confirmDelete) return;
+    const recurring = recurringExpenses.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: "Delete recurring payment?",
+      description: recurring
+        ? `This permanently removes "${recurring.name}" and stops its future tracking.`
+        : "This permanently removes the recurring payment and stops its future tracking.",
+      confirmLabel: "Delete payment",
+      tone: "danger",
+    });
+    if (!confirmed) return;
 
     const previousRecurring = recurringExpenses;
     setRecurringExpenses((previous) =>
@@ -372,8 +392,8 @@ export default function RecurringClient({
       <FinancialSummary items={summaryItems} />
 
       <FilterBar className="p-3">
-        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1.5fr)_repeat(4,minmax(125px,1fr))_auto]">
-          <div className="relative sm:col-span-2 xl:col-span-1">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 md:grid-cols-2 xl:grid-cols-[minmax(240px,1.5fr)_repeat(4,minmax(125px,1fr))_auto]">
+          <div className="relative md:col-span-2 xl:col-span-1">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70"
               aria-hidden="true"
@@ -383,70 +403,79 @@ export default function RecurringClient({
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               placeholder="Search recurring expenses..."
-              className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-blue-400"
+              className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary/70"
             />
           </div>
 
-          <StyledSelect
-            aria-label="Filter by status"
-            value={filters.status || ""}
-            onChange={(event) => updateParam("status", event.target.value)}
-            className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400"
+          <ResponsiveFilterControls
+            hasActiveFilters={Boolean(
+              filters.status ||
+                filters.category ||
+                filters.cycle ||
+                filters.type
+            )}
           >
-            <option value="">All statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-          </StyledSelect>
-
-          <StyledSelect
-            aria-label="Filter by category"
-            value={filters.category || ""}
-            onChange={(event) => updateParam("category", event.target.value)}
-            className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400"
-          >
-            <option value="">All categories</option>
-            {recurringCategories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </StyledSelect>
-
-          <StyledSelect
-            aria-label="Filter by billing cycle"
-            value={filters.cycle || ""}
-            onChange={(event) => updateParam("cycle", event.target.value)}
-            className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400"
-          >
-            <option value="">All cycles</option>
-            {billingCycles.map((cycle) => (
-              <option key={cycle.value} value={cycle.value}>
-                {cycle.label}
-              </option>
-            ))}
-          </StyledSelect>
-
-          <StyledSelect
-            aria-label="Filter by due date"
-            value={filters.type || ""}
-            onChange={(event) => updateParam("type", event.target.value)}
-            className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400"
-          >
-            <option value="">All due dates</option>
-            <option value="DUE_SOON">Due soon</option>
-            <option value="OVERDUE">Overdue</option>
-          </StyledSelect>
-
-          {hasFilters ? (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-muted px-4 text-sm text-foreground hover:bg-accent"
+            <StyledSelect
+              aria-label="Filter by status"
+              value={filters.status || ""}
+              onChange={(event) => updateParam("status", event.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary/70"
             >
-              <X className="size-3.5" />
-              Clear
-            </button>
-          ) : null}
+              <option value="">All statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </StyledSelect>
+
+            <StyledSelect
+              aria-label="Filter by category"
+              value={filters.category || ""}
+              onChange={(event) => updateParam("category", event.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary/70"
+            >
+              <option value="">All categories</option>
+              {recurringCategories.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </StyledSelect>
+
+            <StyledSelect
+              aria-label="Filter by billing cycle"
+              value={filters.cycle || ""}
+              onChange={(event) => updateParam("cycle", event.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary/70"
+            >
+              <option value="">All cycles</option>
+              {billingCycles.map((cycle) => (
+                <option key={cycle.value} value={cycle.value}>
+                  {cycle.label}
+                </option>
+              ))}
+            </StyledSelect>
+
+            <StyledSelect
+              aria-label="Filter by due date"
+              value={filters.type || ""}
+              onChange={(event) => updateParam("type", event.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary/70"
+            >
+              <option value="">All due dates</option>
+              <option value="DUE_SOON">Due soon</option>
+              <option value="OVERDUE">Overdue</option>
+            </StyledSelect>
+
+            {hasFilters ? (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-muted px-4 text-sm text-foreground hover:bg-accent"
+              >
+                <X className="size-3.5" aria-hidden="true" />
+                Clear
+              </button>
+            ) : null}
+          </ResponsiveFilterControls>
         </div>
       </FilterBar>
 
@@ -487,7 +516,7 @@ export default function RecurringClient({
           />
         ) : (
           <>
-            <div className="divide-y divide-border/60 px-4 sm:px-5">
+            <div className="divide-y divide-border/60 px-3 sm:px-5">
               {recurringExpenses.map((item) => (
                 <RecurringRow
                   key={item.id}
@@ -549,35 +578,38 @@ function RecurringRow({
   const dueTone = item.isActive ? getDueTone(item.nextDueDate) : "neutral";
 
   return (
-    <article className="grid min-w-0 gap-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center lg:grid-cols-[minmax(0,1fr)_minmax(150px,auto)_auto]">
-      <div className="min-w-0">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <h3 className="truncate text-sm font-medium text-foreground">
+    <article className="relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] gap-x-2 gap-y-1.5 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-3 sm:py-3 lg:grid-cols-[minmax(0,1fr)_minmax(150px,auto)_auto]">
+      <div className="col-span-3 min-w-0 pr-8 sm:col-span-1 sm:pr-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 sm:gap-x-2 sm:gap-y-1">
+          <h3 className="truncate text-[13px] font-medium text-foreground sm:text-sm">
             {item.name}
           </h3>
-          <StatusBadge tone={item.isActive ? "success" : "neutral"}>
+          <StatusBadge
+            tone={item.isActive ? "success" : "neutral"}
+            className="px-2 py-0.5 text-[10px] sm:px-2.5 sm:py-1 sm:text-xs"
+          >
             {item.isActive ? "Active" : "Inactive"}
           </StatusBadge>
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground/80">
-          <span className="rounded-full bg-muted px-2 py-0.5">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[10px] text-muted-foreground/80 sm:mt-1 sm:gap-x-2 sm:text-[11px]">
+          <span className="rounded-full bg-muted px-1.5 py-0.5 sm:px-2">
             {getCategoryLabel(item.category)}
           </span>
           <span>{getCycleLabel(item.billingCycle)}</span>
         </div>
         {item.note ? (
-          <p className="mt-1 line-clamp-1 max-w-2xl text-xs text-muted-foreground/80">
+          <p className="mt-0.5 line-clamp-1 max-w-2xl text-[11px] text-muted-foreground/80 sm:mt-1 sm:text-xs">
             {item.note}
           </p>
         ) : null}
       </div>
 
-      <div className="min-w-0 lg:text-right">
-        <p className="text-xs text-muted-foreground">
+      <div className="col-span-3 flex min-w-0 items-center justify-between gap-3 sm:col-span-1 sm:col-start-1 sm:row-start-2 sm:block lg:col-start-2 lg:row-start-1 lg:text-right">
+        <p className="shrink-0 text-[11px] text-muted-foreground sm:text-xs">
           {formatDate(item.nextDueDate)}
         </p>
         <p
-          className={`mt-0.5 text-[11px] font-medium ${
+          className={`text-right text-[10px] font-medium sm:mt-0.5 sm:text-left sm:text-[11px] lg:text-right ${
             dueTone === "danger"
               ? "text-red-400"
               : dueTone === "warning"
@@ -589,9 +621,9 @@ function RecurringRow({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 sm:col-start-2 sm:row-start-1 sm:justify-end lg:col-start-3">
-        <div className="text-left sm:min-w-24 sm:text-right">
-          <p className="text-sm font-semibold text-foreground tabular-nums">
+      <div className="contents sm:col-start-2 sm:row-start-1 sm:flex sm:flex-wrap sm:items-center sm:justify-end sm:gap-2 lg:col-start-3">
+        <div className="col-start-3 row-start-3 flex items-baseline justify-end gap-1.5 text-right sm:min-w-24 sm:block">
+          <p className="text-[13px] font-semibold text-foreground tabular-nums sm:text-sm">
             {formatCurrency(item.amount)}
           </p>
           <p className="text-[10px] text-muted-foreground">
@@ -603,7 +635,7 @@ function RecurringRow({
           type="button"
           disabled={!markPaidState.canMarkPaid || isMarkingPaid}
           onClick={() => onMarkPaid(item)}
-          className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-medium ${
+          className={`col-start-1 row-start-3 inline-flex h-7 cursor-pointer items-center justify-center gap-1 rounded-md px-2 text-[11px] font-medium sm:h-8 sm:gap-1.5 sm:rounded-lg sm:px-2.5 sm:text-xs ${
             markPaidState.status === "OVERDUE"
               ? "bg-red-500/10 text-red-400 hover:bg-red-500/15"
               : markPaidState.canMarkPaid
@@ -617,21 +649,23 @@ function RecurringRow({
           }
         >
           {isMarkingPaid ? (
-            <RefreshCcw className="size-3.5 animate-spin" />
+            <RefreshCcw className="size-3 animate-spin sm:size-3.5" aria-hidden="true" />
           ) : (
-            <CheckCircle2 className="size-3.5" />
+            <CheckCircle2 className="size-3 sm:size-3.5" aria-hidden="true" />
           )}
           {isMarkingPaid ? "Marking..." : markPaidState.label}
         </button>
 
-        <RecurringMenu
-          item={item}
-          isMenuOpen={isMenuOpen}
-          setOpenMenuId={setOpenMenuId}
-          onStatusChange={onStatusChange}
-          onDelete={onDelete}
-          onEdit={onEdit}
-        />
+        <div className="absolute right-0 top-2 sm:static">
+          <RecurringMenu
+            item={item}
+            isMenuOpen={isMenuOpen}
+            setOpenMenuId={setOpenMenuId}
+            onStatusChange={onStatusChange}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
+        </div>
       </div>
     </article>
   );
@@ -669,15 +703,15 @@ function RecurringMenu({
         aria-expanded={isMenuOpen}
         aria-haspopup="menu"
         onClick={() => setOpenMenuId(isMenuOpen ? null : item.id)}
-        className="relative inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="relative inline-flex size-7 cursor-pointer items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground sm:size-8"
       >
-        <MoreVertical className="size-4" />
+        <MoreVertical className="size-3.5 sm:size-4" aria-hidden="true" />
       </button>
 
       {isMenuOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-9 z-50 w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-xl shadow-black/25"
+          className="absolute right-0 top-8 z-50 w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-xl shadow-black/25 sm:top-9"
         >
           <button
             type="button"
@@ -727,7 +761,7 @@ function RecurringRowsSkeleton({ compact = false }: { compact?: boolean }) {
   const rows = compact ? 2 : 6;
 
   return (
-    <div className="divide-y divide-border/60 px-4 sm:px-5">
+    <div className="divide-y divide-border/60 px-3 sm:px-5">
       {Array.from({ length: rows }).map((_, index) => (
         <div key={index} className="flex items-center justify-between gap-3 py-3">
           <div>

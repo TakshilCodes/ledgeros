@@ -17,6 +17,7 @@ import {
 import { getExpenses } from "@/actions/expense/getExpenses";
 import { deleteExpense } from "@/actions/expense/deleteExpense";
 import { EmptyState, LoadingSkeleton } from "@/components/ui/foundation";
+import { useConfirmation } from "@/components/ui/confirmation-dialog";
 import { useExpenseModal } from "@/store/expense-modal-store";
 
 type Expense = {
@@ -77,6 +78,7 @@ export default function ExpensesList({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const { onEditOpen } = useExpenseModal();
+  const { confirm } = useConfirmation();
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -112,8 +114,16 @@ export default function ExpensesList({
   }, [cursor, loading, filters]);
 
   async function handleDelete(id: string) {
-    const confirmDelete = confirm("Are you sure you want to delete this expense?");
-    if (!confirmDelete) return;
+    const expense = expenses.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: "Delete expense?",
+      description: expense
+        ? `This permanently removes "${expense.name}" from your expense history.`
+        : "This permanently removes the expense from your history.",
+      confirmLabel: "Delete expense",
+      tone: "danger",
+    });
+    if (!confirmed) return;
 
     const previousExpenses = expenses;
     setDeletingId(id);

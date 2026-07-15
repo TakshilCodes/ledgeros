@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   CalendarClock,
+  Check,
   Car,
   CreditCard,
   Flame,
@@ -236,16 +237,17 @@ export default function DashboardClient({ data, selectedRange }: Props) {
           </div>
 
           {data.expenseOverview.categoryBreakdown.length > 0 ? (
-            <div className="grid min-w-0 items-center gap-2 p-3 sm:p-4 lg:grid-cols-[minmax(280px,1fr)_minmax(260px,0.8fr)]">
-              <div className="flex min-h-56 min-w-0 items-center justify-center">
-                <div className="w-full max-w-md">
+            <div className="grid min-w-0 items-center gap-3 p-2.5 sm:p-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-4">
+              <div className="flex min-h-44 min-w-0 items-center justify-center sm:min-h-56">
+                <div className="w-full max-w-[220px] sm:max-w-[260px]">
                   <SpendingDonutChart
                     categories={data.expenseOverview.categoryBreakdown}
+                    total={data.expenseOverview.totalSpent}
                   />
                 </div>
               </div>
 
-              <div className="min-w-0 lg:border-l lg:border-border/70 lg:pl-4">
+              <div className="min-w-0 border-t border-border/60 pt-3 lg:border-l lg:border-t-0 lg:border-border/70 lg:pl-4 lg:pt-0">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Categories
@@ -548,43 +550,74 @@ export default function DashboardClient({ data, selectedRange }: Props) {
         </Panel>
       </section>
 
-      <section className="flex min-w-0 flex-col gap-2.5 rounded-lg border border-border/60 bg-card/50 px-3 py-2.5 sm:flex-row sm:items-center">
+      <section className="grid min-w-0 gap-3 rounded-lg border border-border/60 bg-card/50 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-300">
-            <Flame className="size-3.5" aria-hidden="true" />
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-300">
+            <Flame className="size-4" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-xs font-medium text-foreground">No Spend Streak</h2>
-            <p className="text-[11px] text-muted-foreground">
+            <h2 className="text-sm font-medium text-foreground">
+              No Spend Streak
+            </h2>
+            <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
               {data.noSpend.streak > 0
-                ? `${data.noSpend.streak} ${data.noSpend.streak === 1 ? "day" : "days"} this week`
-                : "No spend-free days yet this week."}
+                ? `${data.noSpend.streak}-day current streak`
+                : "Spend-free days build your weekly streak."}
             </p>
           </div>
         </div>
 
-        <div
-          className="flex items-center gap-2 sm:ml-5"
+        <ol
+          className="grid w-full grid-cols-7 gap-1 rounded-lg bg-background/50 px-2 py-2 sm:w-auto sm:min-w-[250px] sm:gap-1.5"
           aria-label="No spend activity this week"
         >
-          {data.noSpend.days.map((day, index) => (
-            <div key={`${day.label}-${index}`} className="text-center">
-              <p className="mb-0.5 text-[9px] text-muted-foreground">{day.label}</p>
-              <div
-                title={
-                  day.isFuture
-                    ? "Future day"
-                    : day.isNoSpendDay
-                      ? "No spend day"
-                      : "Spending day"
-                }
-                className={`size-3.5 rounded-full ${
-                  day.isNoSpendDay ? "bg-green-500" : "bg-muted-foreground/35"
-                }`}
-              />
-            </div>
-          ))}
-        </div>
+          {data.noSpend.days.map((day, index) => {
+            const stateLabel = day.isFuture
+              ? "Future day"
+              : day.isNoSpendDay
+                ? "No spend day"
+                : "Spending day";
+
+            return (
+              <li
+                key={`${day.label}-${index}`}
+                aria-label={`${day.label}: ${stateLabel}`}
+                aria-current={day.isToday ? "date" : undefined}
+                className="flex min-w-0 flex-col items-center gap-1"
+              >
+                <span
+                  className={`text-[9px] font-medium ${
+                    day.isToday ? "text-blue-300" : "text-muted-foreground"
+                  }`}
+                >
+                  {day.label}
+                </span>
+                <span
+                  title={stateLabel}
+                  className={`flex size-6 items-center justify-center rounded-full ${
+                    day.isNoSpendDay
+                      ? "bg-green-500/15 text-green-400"
+                      : day.isFuture
+                        ? "border border-dashed border-border bg-transparent text-muted-foreground/50"
+                        : "bg-muted text-muted-foreground"
+                  } ${
+                    day.isToday
+                      ? "ring-2 ring-blue-400/60 ring-offset-2 ring-offset-card"
+                      : ""
+                  }`}
+                >
+                  {day.isNoSpendDay ? (
+                    <Check className="size-3" strokeWidth={2.5} aria-hidden="true" />
+                  ) : day.hasExpense ? (
+                    <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
+                  ) : (
+                    <span className="h-px w-2 bg-current" aria-hidden="true" />
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
       </section>
     </div>
   );

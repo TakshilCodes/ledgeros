@@ -79,6 +79,14 @@ function getStartOfDay(date: Date) {
   return start;
 }
 
+function getDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function getCurrentWeekDateRange() {
   const today = new Date();
   const day = today.getDay(); // Sunday = 0, Monday = 1
@@ -110,7 +118,7 @@ function getWeekDays(weekStartDate: Date) {
     return {
       label,
       date,
-      dateKey: date.toISOString().split("T")[0],
+      dateKey: getDateKey(date),
     };
   });
 }
@@ -542,12 +550,11 @@ export async function getDashboardData(input?: GetDashboardInput) {
     const weekDays = getWeekDays(weekStartDate);
 
     const expenseDateSet = new Set(
-      weeklyExpenses.map((expense) => {
-        return expense.spentAt.toISOString().split("T")[0];
-      })
+      weeklyExpenses.map((expense) => getDateKey(expense.spentAt))
     );
 
     const today = getStartOfDay(new Date());
+    const todayKey = getDateKey(today);
 
     const noSpendDays = weekDays.map((day) => {
       const dayStart = getStartOfDay(day.date);
@@ -558,12 +565,18 @@ export async function getDashboardData(input?: GetDashboardInput) {
         label: day.label,
         date: day.date.toISOString(),
         isFuture,
+        isToday: day.dateKey === todayKey,
         hasExpense,
         isNoSpendDay: !isFuture && !hasExpense,
       };
     });
 
-    const noSpendStreak = noSpendDays.filter((day) => day.isNoSpendDay).length;
+    let noSpendStreak = 0;
+
+    for (const day of noSpendDays) {
+      if (day.isFuture) break;
+      noSpendStreak = day.isNoSpendDay ? noSpendStreak + 1 : 0;
+    }
 
     const dashboardData: DashboardData = {
       month,

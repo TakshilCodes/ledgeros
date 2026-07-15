@@ -20,6 +20,7 @@ type CategoryBreakdown = {
 
 type Props = {
   categories: CategoryBreakdown[];
+  total: number;
 };
 
 const chartColors = [
@@ -32,7 +33,7 @@ const chartColors = [
   "#56D4DD",
 ];
 
-export function SpendingDonutChart({ categories }: Props) {
+export function SpendingDonutChart({ categories, total }: Props) {
   const data = {
     labels: categories.map((category) => category.label),
     datasets: [
@@ -71,8 +72,20 @@ export function SpendingDonutChart({ categories }: Props) {
   };
 
   return (
-    <div className="relative h-56 w-full">
+    <div className="relative h-44 w-full sm:h-56">
       <Doughnut data={data} options={options} />
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-[11px]">
+          Total spent
+        </span>
+        <span className="mt-0.5 max-w-28 truncate text-sm font-semibold text-foreground tabular-nums sm:text-base">
+          {new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 0,
+          }).format(total)}
+        </span>
+      </div>
     </div>
   );
 }

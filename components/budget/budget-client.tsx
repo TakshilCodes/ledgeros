@@ -5,6 +5,8 @@ import AddBudgetModal from "@/components/budget/add-budget-modal";
 import EditBudgetModal from "@/components/budget/edit-budget-modal";
 import { FinancialSummary } from "@/components/dashboard/financial-summary";
 import { EmptyState, FilterBar, StatusBadge } from "@/components/ui/foundation";
+import { useConfirmation } from "@/components/ui/confirmation-dialog";
+import { ResponsiveFilterControls } from "@/components/ui/responsive-filter-controls";
 import {
   Select,
   SelectContent,
@@ -220,6 +222,7 @@ export default function BudgetClient({
   const router = useRouter();
   const pathname = usePathname();
   const { onOpen, onEditOpen } = useBudgetModalStore();
+  const { confirm } = useConfirmation();
   const [isPending, startTransition] = useTransition();
   const [deletingBudgetId, setDeletingBudgetId] = useState<string | null>(null);
 
@@ -257,10 +260,16 @@ export default function BudgetClient({
     router.replace(`${pathname}?${searchParams.toString()}`);
   }
 
-  function handleDeleteBudget(id: string) {
-    const confirmed = confirm(
-      "Delete this budget?\n\nThis will only delete the budget limit, not your expenses."
-    );
+  async function handleDeleteBudget(id: string) {
+    const budget = budgets.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: "Delete budget?",
+      description: budget?.name
+        ? `This removes "${budget.name}" but keeps all recorded expenses.`
+        : "This removes the budget limit but keeps all recorded expenses.",
+      confirmLabel: "Delete budget",
+      tone: "danger",
+    });
     if (!confirmed) return;
     setDeletingBudgetId(id);
     startTransition(async () => {
@@ -330,65 +339,71 @@ export default function BudgetClient({
         <FinancialSummary items={summaryItems} />
 
         <FilterBar className="p-3">
-          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="flex min-w-0 items-center gap-1 rounded-lg border border-border bg-background p-1">
-              <button type="button" aria-label="Previous month"
-                onClick={() => updateParams(getPreviousMonth(selectedMonth, selectedYear))}
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <ChevronLeft size={16} aria-hidden="true" />
-              </button>
-              <Select
-                value={String(selectedMonth)}
-                onValueChange={(value) => updateParams({ month: Number(value) })}
-              >
-                <SelectTrigger aria-label="Budget month" className="h-8 flex-1 border-0 bg-transparent sm:w-36">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="start">
-                  {monthOptions.map((month) => (
-                    <SelectItem key={month.value} value={String(month.value)}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={String(selectedYear)}
-                onValueChange={(value) => updateParams({ year: Number(value) })}
-              >
-                <SelectTrigger aria-label="Budget year" className="h-8 w-24 border-0 bg-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="start">
-                  {getYearOptions().map((year) => (
-                    <SelectItem key={year} value={String(year)}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button type="button" aria-label="Next month"
-                onClick={() => updateParams(getNextMonth(selectedMonth, selectedYear))}
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <ChevronRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-
-            <Select
-              value={selectedType}
-              onValueChange={(value) => updateParams({ type: value as BudgetFilterType })}
+          <div className="flex min-w-0 w-full flex-1 items-center gap-2">
+            <ResponsiveFilterControls
+              hasActiveFilters={selectedType !== "ALL"}
+              showLabel
+              fullWidth
             >
-              <SelectTrigger aria-label="Filter budgets by type" className="h-10 sm:ml-auto sm:w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="end">
-                {budgetTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <div className="flex min-w-0 items-center gap-1 rounded-lg border border-border bg-background p-1">
+                <button type="button" aria-label="Previous month"
+                  onClick={() => updateParams(getPreviousMonth(selectedMonth, selectedYear))}
+                  className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <ChevronLeft size={16} aria-hidden="true" />
+                </button>
+                <Select
+                  value={String(selectedMonth)}
+                  onValueChange={(value) => updateParams({ month: Number(value) })}
+                >
+                  <SelectTrigger aria-label="Budget month" className="h-8 flex-1 border-0 bg-transparent md:w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {monthOptions.map((month) => (
+                      <SelectItem key={month.value} value={String(month.value)}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={String(selectedYear)}
+                  onValueChange={(value) => updateParams({ year: Number(value) })}
+                >
+                  <SelectTrigger aria-label="Budget year" className="h-8 w-24 border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {getYearOptions().map((year) => (
+                      <SelectItem key={year} value={String(year)}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button type="button" aria-label="Next month"
+                  onClick={() => updateParams(getNextMonth(selectedMonth, selectedYear))}
+                  className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <ChevronRight size={16} aria-hidden="true" />
+                </button>
+              </div>
+
+              <Select
+                value={selectedType}
+                onValueChange={(value) => updateParams({ type: value as BudgetFilterType })}
+              >
+                <SelectTrigger aria-label="Filter budgets by type" className="h-10 w-full md:ml-auto md:w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {budgetTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </ResponsiveFilterControls>
           </div>
         </FilterBar>
 

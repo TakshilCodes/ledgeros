@@ -84,6 +84,7 @@ export type DashboardData = {
       label: string;
       date: string;
       isFuture: boolean;
+      isToday: boolean;
       hasExpense: boolean;
       isNoSpendDay: boolean;
     }[];
