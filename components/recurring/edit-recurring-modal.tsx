@@ -1,5 +1,7 @@
 "use client";
 
+import { StyledSelect } from "@/components/ui/select";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, Loader2, Save, X } from "lucide-react";
@@ -148,29 +150,29 @@ export default function EditRecurringModal() {
       open={editOpen}
       onOpenChange={(value) => (!value ? handleClose() : null)}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-[#3D444D] bg-[#0D1117] text-white sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+      <DialogContent className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto border-border/70 bg-card p-0 text-foreground shadow-2xl sm:max-w-xl">
+        <DialogHeader className="sticky top-0 z-10 border-b border-border/70 bg-card px-5 py-4 pr-12 sm:px-6">
+          <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
             Edit Recurring Expense
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-3 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-5 py-5 sm:px-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#C9D1D9]">
+            <label className="text-xs font-medium text-muted-foreground">
               Name
             </label>
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="House Rent, Electricity Bill, EMI..."
-              className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+              className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#C9D1D9]">
+              <label className="text-xs font-medium text-muted-foreground">
                 Amount
               </label>
               <input
@@ -183,51 +185,51 @@ export default function EditRecurringModal() {
                 type="number"
                 min="0"
                 placeholder="12000"
-                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#C9D1D9]">
+              <label className="text-xs font-medium text-muted-foreground">
                 Category
               </label>
-              <select
+              <StyledSelect
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               >
                 {categories.map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
                 ))}
-              </select>
+              </StyledSelect>
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#C9D1D9]">
+              <label className="text-xs font-medium text-muted-foreground">
                 Billing Cycle
               </label>
-              <select
+              <StyledSelect
                 value={billingCycle}
                 onChange={(event) => {
                   setBillingCycle(event.target.value);
                   setNextDueDate(undefined);
                 }}
-                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               >
                 {billingCycles.map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
                 ))}
-              </select>
+              </StyledSelect>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#C9D1D9]">
+              <label className="text-xs font-medium text-muted-foreground">
                 Next Due Date
               </label>
 
@@ -235,21 +237,21 @@ export default function EditRecurringModal() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-11 w-full items-center justify-between rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-left text-sm text-white outline-none hover:border-[#58A6FF]"
+                    className="flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-border/80 bg-background px-3 text-left text-sm text-foreground outline-none transition-colors hover:border-border focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {nextDueDate ? (
                       format(nextDueDate, "dd MMM yyyy")
                     ) : (
-                      <span className="text-[#6E7681]">Pick a date</span>
+                      <span className="text-muted-foreground/70">Pick a date</span>
                     )}
 
-                    <CalendarIcon size={16} className="text-[#6E7681]" />
+                    <CalendarIcon size={16} className="text-muted-foreground/70" />
                   </button>
                 </PopoverTrigger>
 
                 <PopoverContent
                   align="start"
-                  className="w-auto border-[#3D444D] bg-[#0D1117] p-0 text-white"
+                  className="w-auto border-border bg-card p-0 text-white"
                 >
                   <Calendar
                     mode="single"
@@ -272,7 +274,7 @@ export default function EditRecurringModal() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#C9D1D9]">
+            <label className="text-xs font-medium text-muted-foreground">
               Note optional
             </label>
             <textarea
@@ -280,23 +282,26 @@ export default function EditRecurringModal() {
               onChange={(event) => setNote(event.target.value)}
               placeholder="Paid to landlord, auto debit, etc."
               rows={3}
-              className="w-full resize-none rounded-xl border border-[#3D444D] bg-[#010409] px-3 py-2 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+              className="min-h-20 w-full resize-none rounded-lg border border-border/80 bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-[#3D444D] bg-[#010409] px-3 py-3">
+          <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2.5 ring-1 ring-border/60">
             <div>
               <p className="text-sm font-medium text-white">Active</p>
-              <p className="text-xs text-[#8B949E]">
+              <p className="text-xs text-muted-foreground">
                 Active recurring expenses count in stats.
               </p>
             </div>
 
             <button
               type="button"
+              role="switch"
+              aria-checked={isActive}
+              aria-label="Set recurring expense active status"
               onClick={() => setIsActive((prev) => !prev)}
               className={`relative h-6 w-11 rounded-full transition ${
-                isActive ? "bg-[#238636]" : "bg-[#3D444D]"
+                isActive ? "bg-primary" : "bg-muted-foreground/40"
               }`}
             >
               <span
@@ -307,12 +312,12 @@ export default function EditRecurringModal() {
             </button>
           </div>
 
-          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+          <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-5 flex flex-col-reverse gap-2 border-t border-border/70 bg-card/95 px-5 py-4 sm:-mx-6 sm:flex-row sm:justify-end sm:px-6">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-muted px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <X size={16} />
               Cancel
@@ -321,7 +326,7 @@ export default function EditRecurringModal() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 text-sm font-medium text-white transition hover:bg-[#2ea043] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <Loader2 size={16} className="animate-spin" />

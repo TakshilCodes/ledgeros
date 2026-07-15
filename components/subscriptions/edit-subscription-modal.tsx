@@ -1,5 +1,7 @@
 "use client";
 
+import { StyledSelect } from "@/components/ui/select";
+
 import { updateSubscription } from "@/actions/subscription/update-subscription";
 import { useSubscriptionModal } from "@/store/subscription-modal-store";
 import { BillingCycle } from "@/app/generated/prisma/client";
@@ -181,33 +183,33 @@ export function EditSubscriptionModal() {
 
   return (
     <Dialog open={editOpen} onOpenChange={closeModal}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-[#3D444D] bg-[#0D1117] text-white sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">
+      <DialogContent className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto border-border/70 bg-card p-0 text-foreground shadow-2xl sm:max-w-lg">
+        <DialogHeader className="sticky top-0 z-10 border-b border-border/70 bg-card px-5 py-4 pr-12 sm:px-6">
+          <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
             Edit Subscription
           </DialogTitle>
         </DialogHeader>
 
         {error ? (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          <div className="mx-5 mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400 ring-1 ring-red-500/20 sm:mx-6">
             {error}
           </div>
         ) : null}
 
         {selectedSubscription ? (
-          <form onSubmit={handleSubmit} className="mt-4 space-y-5">
-            <div className="flex items-center gap-3 rounded-xl border border-[#3D444D] bg-[#151B23] p-3">
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-[#3D444D] bg-[#010409]">
+          <form onSubmit={handleSubmit} className="space-y-4 px-5 py-5 sm:px-6">
+            <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-3 ring-1 ring-border/60">
+              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-white/90 ring-1 ring-black/10">
                 {selectedSubscription.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={selectedSubscription.logo}
                     alt={selectedSubscription.name}
                     loading="lazy"
-                    className="h-7 w-7 object-contain"
+                    className="h-7 w-7 object-contain drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
                   />
                 ) : (
-                  <CreditCard size={20} className="text-[#8B949E]" />
+                  <CreditCard size={20} className="text-muted-foreground" />
                 )}
               </div>
 
@@ -215,7 +217,7 @@ export function EditSubscriptionModal() {
                 <h3 className="font-medium text-white">
                   {selectedSubscription.name}
                 </h3>
-                <p className="text-sm text-[#8B949E]">
+                <p className="text-sm text-muted-foreground">
                   {selectedSubscription.category}
                 </p>
               </div>
@@ -224,23 +226,23 @@ export function EditSubscriptionModal() {
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Name */}
               <div className="space-y-2">
-                <label className="text-sm text-[#C9D1D9]">
+                <label className="text-xs font-medium text-muted-foreground">
                   Subscription Name
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                  className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                 />
               </div>
 
               {/* Category */}
               <div className="space-y-2">
-                <label className="text-sm text-[#C9D1D9]">Category</label>
-                <select
+                <label className="text-xs font-medium text-muted-foreground">Category</label>
+                <StyledSelect
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                  className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                 >
                   <option value="">Select category</option>
                   {categories.map((item) => (
@@ -248,73 +250,73 @@ export function EditSubscriptionModal() {
                       {item}
                     </option>
                   ))}
-                </select>
+                </StyledSelect>
               </div>
 
               {/* Plan Name */}
               <div className="space-y-2">
-                <label className="text-sm text-[#C9D1D9]">
+                <label className="text-xs font-medium text-muted-foreground">
                   Plan Name{" "}
-                  <span className="text-[#6E7681]">(optional)</span>
+                  <span className="text-muted-foreground/70">(optional)</span>
                 </label>
                 <input
                   value={planName}
                   onChange={(e) => setPlanName(e.target.value)}
                   placeholder="Premium / Basic / Pro"
-                  className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                  className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                 />
               </div>
 
               {/* Amount */}
               <div className="space-y-2">
-                <label className="text-sm text-[#C9D1D9]">Amount</label>
+                <label className="text-xs font-medium text-muted-foreground">Amount</label>
                 <input
                   type="number"
                   min={1}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="499"
-                  className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
               </div>
 
               {/* Billing Cycle */}
               <div className="space-y-2">
-                <label className="text-sm text-[#C9D1D9]">
+                <label className="text-xs font-medium text-muted-foreground">
                   Billing Cycle
                 </label>
-                <select
+                <StyledSelect
                   value={billingCycle}
                   onChange={(e) =>
                     setBillingCycle(e.target.value as BillingCycle)
                   }
-                  className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                  className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                 >
                   {billingCycles.map((cycle) => (
                     <option key={cycle} value={cycle}>
                       {formatBillingCycle(cycle)}
                     </option>
                   ))}
-                </select>
+                </StyledSelect>
               </div>
 
               {/* Status */}
               <div className="space-y-2">
-                <label className="text-sm text-[#C9D1D9]">Status</label>
-                <select
+                <label className="text-xs font-medium text-muted-foreground">Status</label>
+                <StyledSelect
                   value={isActive ? "ACTIVE" : "INACTIVE"}
                   onChange={(e) => setIsActive(e.target.value === "ACTIVE")}
-                  className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                  className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                 >
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
-                </select>
+                </StyledSelect>
               </div>
             </div>
 
             {/* Renewal Date */}
             <div className="space-y-2">
-              <label className="text-sm text-[#C9D1D9]">
+              <label className="text-xs font-medium text-muted-foreground">
                 Next Renewal Date
               </label>
 
@@ -323,21 +325,21 @@ export function EditSubscriptionModal() {
                   <button
                     type="button"
                     className={cn(
-                      "flex h-11 w-full items-center justify-between rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white transition hover:border-[#4B5563]",
-                      !nextRenewalDate && "text-[#6E7681]"
+                      "flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/15",
+                      !nextRenewalDate && "text-muted-foreground/70"
                     )}
                   >
                     {nextRenewalDate
                       ? format(nextRenewalDate, "PPP")
                       : "Pick renewal date"}
 
-                    <CalendarIcon size={18} className="text-[#8B949E]" />
+                    <CalendarIcon size={18} className="text-muted-foreground" />
                   </button>
                 </PopoverTrigger>
 
                 <PopoverContent
                   align="start"
-                  className="w-auto rounded-xl border border-[#3D444D] bg-[#0D1117] p-3 text-white shadow-2xl"
+                  className="w-auto rounded-xl border border-border bg-card p-3 text-white shadow-2xl"
                 >
                   <Calendar
                     mode="single"
@@ -366,26 +368,26 @@ export function EditSubscriptionModal() {
 
                       dropdowns: "flex items-center justify-center gap-2",
                       dropdown:
-                        "rounded-md border border-[#3D444D] bg-[#010409] px-2 py-1 text-sm text-white outline-none hover:bg-[#151B23]",
+                        "rounded-md border border-border bg-background px-2 py-1 text-sm text-white outline-none hover:bg-muted",
 
                       button_previous:
-                        "absolute left-2 top-1 h-7 w-7 rounded-md text-[#8B949E] hover:bg-[#151B23] hover:text-white",
+                        "absolute left-2 top-1 h-7 w-7 rounded-md text-muted-foreground hover:bg-muted hover:text-white",
                       button_next:
-                        "absolute right-2 top-1 h-7 w-7 rounded-md text-[#8B949E] hover:bg-[#151B23] hover:text-white",
+                        "absolute right-2 top-1 h-7 w-7 rounded-md text-muted-foreground hover:bg-muted hover:text-white",
 
                       weekdays: "mt-4 flex",
                       weekday:
-                        "w-9 text-center text-[0.8rem] font-normal text-[#8B949E]",
+                        "w-9 text-center text-[0.8rem] font-normal text-muted-foreground",
 
                       week: "mt-2 flex w-full",
-                      day: "h-9 w-9 p-0 text-center text-sm text-[#C9D1D9]",
+                      day: "h-9 w-9 p-0 text-center text-xs font-medium text-muted-foreground",
                       day_button:
-                        "h-9 w-9 rounded-md text-[#C9D1D9] transition hover:bg-[#151B23] hover:text-white",
+                        "h-9 w-9 rounded-md text-foreground transition hover:bg-muted hover:text-white",
 
-                      today: "rounded-md border border-[#58A6FF] text-white",
+                      today: "rounded-md ring-1 ring-primary/50 text-foreground",
 
                       selected:
-                        "rounded-md bg-[#238636] text-white hover:bg-[#2ea043]",
+                        "rounded-md bg-primary text-white hover:bg-primary",
 
                       outside: "text-[#484F58] opacity-60",
                       disabled: "text-[#484F58] opacity-50",
@@ -397,12 +399,12 @@ export function EditSubscriptionModal() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 border-t border-[#3D444D] pt-5">
+            <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-5 flex flex-col-reverse gap-2 border-t border-border/70 bg-card/95 px-5 py-4 sm:-mx-6 sm:flex-row sm:justify-end sm:px-6">
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={loading}
-                className="flex-1 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 py-3 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#1f2630] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -410,7 +412,7 @@ export function EditSubscriptionModal() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 rounded-xl bg-[#2ea043] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#238636] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">

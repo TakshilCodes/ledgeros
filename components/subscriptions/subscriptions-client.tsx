@@ -1,10 +1,9 @@
 "use client";
 
-import { getSubscriptions } from "@/actions/subscription/get-subscriptions";
-import { deleteSubscription } from "@/actions/subscription/delete-subscription";
-import { updateSubscriptionStatus } from "@/actions/subscription/update-subscription-status";
-import { useSubscriptionModal } from "@/store/subscription-modal-store";
+import { StyledSelect } from "@/components/ui/select";
 
+import { useEffect, useRef, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CalendarDays,
   CreditCard,
@@ -16,17 +15,19 @@ import {
   Trash2,
   Wallet,
   X,
-  Zap,
 } from "lucide-react";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { deleteSubscription } from "@/actions/subscription/delete-subscription";
+import { getSubscriptions } from "@/actions/subscription/get-subscriptions";
+import { updateSubscriptionStatus } from "@/actions/subscription/update-subscription-status";
+import { FinancialSummary } from "@/components/dashboard/financial-summary";
 import {
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-  type ElementType,
-} from "react";
+  EmptyState,
+  FilterBar,
+  LoadingSkeleton,
+  StatusBadge,
+} from "@/components/ui/foundation";
+import { useSubscriptionModal } from "@/store/subscription-modal-store";
 
 import { AddSubscriptionModal } from "./add-subscription-modal";
 import { EditSubscriptionModal } from "./edit-subscription-modal";
@@ -108,29 +109,37 @@ function formatDate(date: Date | string) {
   }).format(new Date(date));
 }
 
-function getDaysLeft(date: string) {
+function getRenewalDays(date: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const renewalDate = new Date(date);
   renewalDate.setHours(0, 0, 0, 0);
+  return Math.ceil(
+    (renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+}
 
-  const diff = renewalDate.getTime() - today.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+function getDaysLeft(date: string) {
+  const days = getRenewalDays(date);
 
   if (days < 0) return `${Math.abs(days)} days overdue`;
   if (days === 0) return "Renews today";
   if (days === 1) return "Renews tomorrow";
-
   return `Renews in ${days} days`;
+}
+
+function getRenewalTone(date: string) {
+  const days = getRenewalDays(date);
+  if (days < 0) return "danger";
+  if (days <= 7) return "warning";
+  return "neutral";
 }
 
 function formatBillingCycle(cycle: string) {
   if (cycle === "MONTHLY") return "Monthly";
   if (cycle === "QUARTERLY") return "Quarterly";
-  if (cycle === "HALF_YEARLY") return "Half-Yearly";
+  if (cycle === "HALF_YEARLY") return "Half-yearly";
   if (cycle === "YEARLY") return "Yearly";
-
   return cycle;
 }
 
@@ -144,21 +153,15 @@ export function SubscriptionsClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const [subscriptions, setSubscriptions] = useState(initialSubscriptions);
   const [cursor, setCursor] = useState(initialCursor);
-
   const [search, setSearch] = useState(filters.search || "");
   const [status, setStatus] = useState(filters.status || "ALL");
   const [type, setType] = useState(filters.type || "ALL");
-
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const isFirstSearchRender = useRef(true);
-
   const { onOpen, onEditOpen } = useSubscriptionModal();
 
   const hasFilters =
@@ -185,7 +188,6 @@ export function SubscriptionsClient({
     }
 
     const queryString = params.toString();
-
     startTransition(() => {
       router.replace(queryString ? `${pathname}?${queryString}` : pathname);
     });
@@ -195,30 +197,20 @@ export function SubscriptionsClient({
     setSearch("");
     setStatus("ALL");
     setType("ALL");
-
-    startTransition(() => {
-      router.replace(pathname);
-    });
+    startTransition(() => router.replace(pathname));
   }
 
   useEffect(() => {
-    if (isFirstSearchRender.current) {
-      isFirstSearchRender.current = false;
-      return;
-    }
+    if (search === (filters.search || "")) return;
 
-    const timeout = setTimeout(() => {
-      updateParam("search", search);
-    }, 500);
-
+    const timeout = setTimeout(() => updateParam("search", search), 500);
     return () => clearTimeout(timeout);
-  }, [search]);
+  }, [search, filters.search]);
 
   async function loadMoreSubscriptions() {
     if (!cursor || isLoadingMore || isPending) return;
 
     setIsLoadingMore(true);
-
     try {
       const res = await getSubscriptions({
         cursor,
@@ -226,8 +218,7 @@ export function SubscriptionsClient({
         status: filters.status,
         type: filters.type,
       });
-
-      setSubscriptions((prev) => [...prev, ...res.subscriptions]);
+      setSubscriptions((previous) => [...previous, ...res.subscriptions]);
       setCursor(res.nextCursor);
     } finally {
       setIsLoadingMore(false);
@@ -236,23 +227,16 @@ export function SubscriptionsClient({
 
   useEffect(() => {
     const element = loadMoreRef.current;
-
     if (!element || !cursor || isPending) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreSubscriptions();
-        }
+        if (entries[0].isIntersecting) loadMoreSubscriptions();
       },
-      {
-        rootMargin: "200px",
-        threshold: 0.1,
-      }
+      { rootMargin: "200px", threshold: 0.1 }
     );
 
     observer.observe(element);
-
     return () => observer.disconnect();
   }, [
     cursor,
@@ -267,14 +251,9 @@ export function SubscriptionsClient({
     const nextStatus = !subscription.isActive;
     const previousSubscriptions = subscriptions;
 
-    setSubscriptions((prev) =>
-      prev.map((item) =>
-        item.id === subscription.id
-          ? {
-              ...item,
-              isActive: nextStatus,
-            }
-          : item
+    setSubscriptions((previous) =>
+      previous.map((item) =>
+        item.id === subscription.id ? { ...item, isActive: nextStatus } : item
       )
     );
 
@@ -293,13 +272,11 @@ export function SubscriptionsClient({
     const confirmed = confirm(
       "Are you sure you want to delete this subscription?"
     );
-
     if (!confirmed) return;
 
     const previousSubscriptions = subscriptions;
-
-    setSubscriptions((prev) =>
-      prev.filter((subscription) => subscription.id !== id)
+    setSubscriptions((previous) =>
+      previous.filter((subscription) => subscription.id !== id)
     );
 
     const res = await deleteSubscription(id);
@@ -313,186 +290,198 @@ export function SubscriptionsClient({
     router.refresh();
   }
 
+  const summaryItems = [
+    {
+      label: "Monthly total",
+      value: formatCurrency(userStats.monthlyTotal || 0),
+      supportingText: "Active subscription cost",
+      icon: Wallet,
+    },
+    {
+      label: "Active subscriptions",
+      value: String(userStats.activeSubscriptions || 0),
+      supportingText: `${userStats.totalSubscriptions || 0} total saved`,
+      icon: CreditCard,
+    },
+    {
+      label: "Upcoming renewal",
+      value: userStats.upcomingRenewal?.name || "None",
+      supportingText: userStats.upcomingRenewal
+        ? getDaysLeft(userStats.upcomingRenewal.date)
+        : "No upcoming renewals",
+      icon: CalendarDays,
+    },
+    {
+      label: "Yearly estimate",
+      value: formatCurrency(userStats.yearlyEstimate || 0),
+      supportingText: "Estimated yearly cost",
+      icon: IndianRupee,
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#010409] px-4 py-5 text-white sm:px-6 lg:px-8">
+    <div className="w-full min-w-0 space-y-4 text-foreground">
       <AddSubscriptionModal templates={templates} />
       <EditSubscriptionModal />
 
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={onOpen}
-            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#2ea043]"
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">
+            Plan overview
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Track recurring plans and renewal dates.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpen}
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-green-500"
+        >
+          <Plus className="size-4" />
+          Add subscription
+        </button>
+      </section>
+
+      <FinancialSummary items={summaryItems} />
+
+      <FilterBar className="p-3">
+        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-[minmax(260px,1.5fr)_minmax(150px,1fr)_minmax(150px,1fr)_auto]">
+          <div className="relative sm:col-span-2 xl:col-span-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70"
+              aria-hidden="true"
+            />
+            <input
+              aria-label="Search subscriptions"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search subscriptions..."
+              className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-blue-400"
+            />
+          </div>
+
+          <StyledSelect
+            aria-label="Filter by status"
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value);
+              updateParam("status", event.target.value);
+            }}
+            className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400"
           >
-            <Plus size={17} />
-            Add Subscription
-          </button>
-        </div>
+            <option value="ALL">All statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </StyledSelect>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between md:hidden">
-            <p className="text-xs text-[#8B949E]">Overview</p>
+          <StyledSelect
+            aria-label="Filter by billing type"
+            value={type}
+            onChange={(event) => {
+              setType(event.target.value);
+              updateParam("type", event.target.value);
+            }}
+            className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400"
+          >
+            <option value="ALL">All types</option>
+            {subscriptionTypes.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </StyledSelect>
 
-            <div className="flex items-center gap-2 text-xs text-[#6E7681]">
-              <span>Swipe to see more</span>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3">
-              <StatCard
-                title="Monthly Total"
-                value={formatCurrency(userStats.monthlyTotal || 0)}
-                subtitle="Active subscription cost"
-                icon={Wallet}
-              />
-
-              <StatCard
-                title="Active Subscriptions"
-                value={`${userStats.activeSubscriptions || 0}`}
-                subtitle={`${userStats.totalSubscriptions || 0} total saved`}
-                icon={CreditCard}
-              />
-
-              <StatCard
-                title="Upcoming Renewal"
-                value={userStats.upcomingRenewal?.name || "None"}
-                subtitle={
-                  userStats.upcomingRenewal
-                    ? getDaysLeft(userStats.upcomingRenewal.date)
-                    : "No upcoming renewals"
-                }
-                icon={CalendarDays}
-              />
-
-              <StatCard
-                title="Yearly Estimate"
-                value={formatCurrency(userStats.yearlyEstimate || 0)}
-                subtitle="Estimated yearly cost"
-                icon={IndianRupee}
-              />
-            </div>
-
-            <div className="pointer-events-none absolute bottom-3 right-0 top-0 w-12 bg-linear-to-l from-[#010409] to-transparent md:hidden" />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-          <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_auto]">
-            <div className="relative">
-              <Search
-                size={17}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6E7681]"
-              />
-
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search subscriptions..."
-                className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] pl-10 pr-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
-              />
-            </div>
-
-            <select
-              value={status}
-              onChange={(event) => {
-                setStatus(event.target.value);
-                updateParam("status", event.target.value);
-              }}
-              className="h-11 cursor-pointer rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+          {hasFilters ? (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-muted px-4 text-sm text-foreground hover:bg-accent"
             >
-              <option value="ALL">All Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
+              <X className="size-3.5" />
+              Clear
+            </button>
+          ) : null}
+        </div>
+      </FilterBar>
 
-            <select
-              value={type}
-              onChange={(event) => {
-                setType(event.target.value);
-                updateParam("type", event.target.value);
-              }}
-              className="h-11 cursor-pointer rounded-xl border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+      <section
+        aria-labelledby="subscription-list-title"
+        className="rounded-xl border border-border/70 bg-card"
+      >
+        <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-5">
+          <div>
+            <h2
+              id="subscription-list-title"
+              className="text-sm font-semibold text-foreground"
             >
-              <option value="ALL">All Types</option>
-              {subscriptionTypes.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-
-            {hasFilters ? (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm text-[#C9D1D9] transition hover:bg-[#21262D]"
-              >
-                <X size={16} />
-                Clear
-              </button>
-            ) : null}
+              Subscriptions
+            </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Plans, costs and upcoming renewals
+            </p>
           </div>
         </div>
 
         {isPending ? (
-          <SubscriptionBottomSkeleton />
+          <SubscriptionRowsSkeleton />
         ) : subscriptions.length === 0 ? (
-          <EmptyState onOpen={onOpen} />
+          <EmptyState
+            icon={CreditCard}
+            title="No subscriptions found"
+            description="Add a plan or clear the current filters to see your subscriptions."
+            action={
+              <button
+                type="button"
+                onClick={onOpen}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-green-500"
+              >
+                <Plus className="size-4" />
+                Add subscription
+              </button>
+            }
+            className="border-0 py-8 sm:py-10"
+          />
         ) : (
-          <div className="space-y-3">
-            {subscriptions.map((subscription) => (
-              <SubscriptionCard
-                key={subscription.id}
-                subscription={subscription}
-                openMenuId={openMenuId}
-                setOpenMenuId={setOpenMenuId}
-                onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
-                onEdit={onEditOpen}
-              />
-            ))}
+          <>
+            <div className="divide-y divide-border/60 px-4 sm:px-5">
+              {subscriptions.map((subscription) => (
+                <SubscriptionRow
+                  key={subscription.id}
+                  subscription={subscription}
+                  openMenuId={openMenuId}
+                  setOpenMenuId={setOpenMenuId}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDelete}
+                  onEdit={onEditOpen}
+                />
+              ))}
+            </div>
 
-            <div ref={loadMoreRef} className="h-8" />
-
-            {isLoadingMore ? <SubscriptionBottomSkeleton /> : null}
-          </div>
+            <div
+              ref={loadMoreRef}
+              className="border-t border-border/60 px-4 py-2 sm:px-5"
+            >
+              {isLoadingMore ? (
+                <SubscriptionRowsSkeleton compact />
+              ) : cursor ? (
+                <p className="text-center text-[11px] text-muted-foreground">
+                  Scroll to load more
+                </p>
+              ) : (
+                <p className="text-center text-[11px] text-muted-foreground">
+                  End of subscriptions
+                </p>
+              )}
+            </div>
+          </>
         )}
-      </div>
+      </section>
     </div>
   );
 }
 
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-}: {
-  title: string;
-  value: string;
-  subtitle: string;
-  icon: ElementType;
-}) {
-  return (
-    <div className="min-w-57.5 snap-start rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-[#8B949E]">{title}</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">{value}</h3>
-          <p className="mt-1 text-xs text-[#6E7681]">{subtitle}</p>
-        </div>
-
-        <div className="rounded-xl border border-[#3D444D] bg-[#151B23] p-2 text-[#58A6FF]">
-          <Icon size={18} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type SubscriptionCardProps = {
+type SubscriptionRowProps = {
   subscription: Subscription;
   openMenuId: string | null;
   setOpenMenuId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -501,194 +490,93 @@ type SubscriptionCardProps = {
   onEdit: (subscription: Subscription) => void;
 };
 
-function SubscriptionCard({
+function SubscriptionRow({
   subscription,
   openMenuId,
   setOpenMenuId,
   onStatusChange,
   onDelete,
   onEdit,
-}: SubscriptionCardProps) {
+}: SubscriptionRowProps) {
   const isMenuOpen = openMenuId === subscription.id;
+  const renewalTone = subscription.isActive
+    ? getRenewalTone(subscription.nextRenewalDate)
+    : "neutral";
 
   return (
-    <div className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4 transition hover:border-[#58A6FF]/40">
-      <div className="hidden items-start justify-between gap-4 md:flex">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#3D444D] bg-[#151B23]">
-            {subscription.logo ? (
-              <img
-                src={subscription.logo}
-                alt={subscription.name}
-                loading="lazy"
-                className="h-7 w-7 object-contain"
-              />
-            ) : (
-              <CreditCard size={22} className="text-[#8B949E]" />
-            )}
-          </div>
-
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-base font-semibold text-white">
-                {subscription.name}
-              </h3>
-
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                  subscription.isActive
-                    ? "bg-[#238636]/15 text-[#3FB950]"
-                    : "bg-[#6E7681]/15 text-[#8B949E]"
-                }`}
-              >
-                {subscription.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#8B949E]">
-              <span>{subscription.category}</span>
-              {subscription.planName ? <span>{subscription.planName}</span> : null}
-              <span>{formatBillingCycle(subscription.billingCycle)}</span>
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#151B23] px-3 py-1 text-[#C9D1D9]">
-                <Zap size={14} />
-                {formatCurrency(subscription.amount)} /{" "}
-                {formatBillingCycle(subscription.billingCycle)}
-              </span>
-
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#151B23] px-3 py-1 text-[#C9D1D9]">
-                <CalendarDays size={14} />
-                Next: {formatDate(subscription.nextRenewalDate)}
-              </span>
-
-              <span className="rounded-full bg-[#151B23] px-3 py-1 text-[#58A6FF]">
-                {getDaysLeft(subscription.nextRenewalDate)}
-              </span>
-            </div>
-          </div>
+    <article className="grid min-w-0 gap-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center lg:grid-cols-[minmax(0,1fr)_minmax(160px,auto)_auto]">
+      <div className="flex min-w-0 items-start gap-3 sm:items-center">
+        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/90 ring-1 ring-black/10">
+          {subscription.logo ? (
+            <img
+              src={subscription.logo}
+              alt=""
+              loading="lazy"
+              className="size-6 object-contain drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
+            />
+          ) : (
+            <CreditCard className="size-4 text-slate-700" />
+          )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onStatusChange(subscription)}
-            className={`inline-flex cursor-pointer items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium transition ${
-              subscription.isActive
-                ? "border-[#238636]/40 bg-[#238636]/10 text-[#3FB950] hover:bg-[#238636]/15"
-                : "border-[#3D444D] bg-[#151B23] text-[#8B949E] hover:bg-[#21262D]"
-            }`}
-          >
-            {subscription.isActive ? "Active" : "Inactive"}
-          </button>
-
-          <SubscriptionMenu
-            subscription={subscription}
-            isMenuOpen={isMenuOpen}
-            setOpenMenuId={setOpenMenuId}
-            onStatusChange={onStatusChange}
-            onDelete={onDelete}
-            onEdit={onEdit}
-          />
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h3 className="truncate text-sm font-medium text-foreground">
+              {subscription.name}
+            </h3>
+            <StatusBadge tone={subscription.isActive ? "success" : "neutral"}>
+              {subscription.isActive ? "Active" : "Inactive"}
+            </StatusBadge>
+          </div>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {subscription.planName || "Standard plan"}
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground/80">
+            <span className="rounded-full bg-muted px-2 py-0.5">
+              {subscription.category}
+            </span>
+            <span>{formatBillingCycle(subscription.billingCycle)}</span>
+          </div>
         </div>
       </div>
 
-      <div className="md:hidden">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#3D444D] bg-[#151B23]">
-            {subscription.logo ? (
-              <img
-                src={subscription.logo}
-                alt={subscription.name}
-                loading="lazy"
-                className="h-7 w-7 object-contain"
-              />
-            ) : (
-              <CreditCard size={20} className="text-[#8B949E]" />
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="truncate text-base font-semibold leading-5 text-white">
-                  {subscription.name}
-                </h3>
-
-                <p className="mt-1 truncate text-sm text-[#8B949E]">
-                  {subscription.category}
-                  {subscription.planName ? ` • ${subscription.planName}` : ""}
-                </p>
-              </div>
-
-              <span
-                className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
-                  subscription.isActive
-                    ? "bg-[#238636]/15 text-[#3FB950]"
-                    : "bg-[#6E7681]/15 text-[#8B949E]"
-                }`}
-              >
-                {subscription.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-3">
-              <div className="rounded-xl bg-[#151B23] px-3 py-3">
-                <p className="text-xs text-[#8B949E]">Cost</p>
-
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {formatCurrency(subscription.amount)}
-                  <span className="font-normal text-[#8B949E]">
-                    {" "}
-                    / {formatBillingCycle(subscription.billingCycle)}
-                  </span>
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-[#151B23] px-3 py-3">
-                <p className="text-xs text-[#8B949E]">Next renewal</p>
-
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <p className="text-sm font-semibold text-white">
-                    {formatDate(subscription.nextRenewalDate)}
-                  </p>
-
-                  <span className="text-xs text-[#3D444D]">•</span>
-
-                  <p className="text-xs font-medium text-[#58A6FF]">
-                    {getDaysLeft(subscription.nextRenewalDate)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => onStatusChange(subscription)}
-                className={`inline-flex h-10 cursor-pointer items-center justify-center rounded-xl border px-4 text-sm font-medium transition ${
-                  subscription.isActive
-                    ? "border-[#238636]/40 bg-[#238636]/10 text-[#3FB950] hover:bg-[#238636]/15"
-                    : "border-[#3D444D] bg-[#151B23] text-[#8B949E] hover:bg-[#21262D]"
-                }`}
-              >
-                {subscription.isActive ? "Active" : "Inactive"}
-              </button>
-
-              <SubscriptionMenu
-                subscription={subscription}
-                isMenuOpen={isMenuOpen}
-                setOpenMenuId={setOpenMenuId}
-                onStatusChange={onStatusChange}
-                onDelete={onDelete}
-                onEdit={onEdit}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="ml-12 min-w-0 sm:ml-0 lg:text-right">
+        <p className="text-xs text-muted-foreground">
+          {formatDate(subscription.nextRenewalDate)}
+        </p>
+        <p
+          className={`mt-0.5 text-[11px] font-medium ${
+            renewalTone === "danger"
+              ? "text-red-400"
+              : renewalTone === "warning"
+                ? "text-amber-300"
+                : "text-muted-foreground"
+          }`}
+        >
+          {getDaysLeft(subscription.nextRenewalDate)}
+        </p>
       </div>
-    </div>
+
+      <div className="flex items-center justify-between gap-2 sm:col-start-2 sm:row-start-1 sm:justify-end lg:col-start-3">
+        <div className="text-left sm:min-w-28 sm:text-right">
+          <p className="text-sm font-semibold text-foreground tabular-nums">
+            {formatCurrency(subscription.amount)}
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            / {formatBillingCycle(subscription.billingCycle)}
+          </p>
+        </div>
+
+        <SubscriptionMenu
+          subscription={subscription}
+          isMenuOpen={isMenuOpen}
+          setOpenMenuId={setOpenMenuId}
+          onStatusChange={onStatusChange}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
+      </div>
+    </article>
   );
 }
 
@@ -712,7 +600,7 @@ function SubscriptionMenu({
       {isMenuOpen ? (
         <button
           type="button"
-          aria-label="Close subscription menu"
+          aria-label="Close subscription actions"
           onClick={() => setOpenMenuId(null)}
           className="fixed inset-0 z-40 cursor-default bg-transparent"
         />
@@ -720,49 +608,56 @@ function SubscriptionMenu({
 
       <button
         type="button"
-        onClick={() => {
-          setOpenMenuId(isMenuOpen ? null : subscription.id);
-        }}
-        className="relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23] text-[#C9D1D9] transition hover:bg-[#21262D]"
+        aria-label={`Open actions for ${subscription.name}`}
+        aria-expanded={isMenuOpen}
+        aria-haspopup="menu"
+        onClick={() => setOpenMenuId(isMenuOpen ? null : subscription.id)}
+        className="relative inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
       >
-        <MoreVertical size={17} />
+        <MoreVertical className="size-4" />
       </button>
 
       {isMenuOpen ? (
-        <div className="absolute right-0 top-12 z-50 w-44 overflow-hidden rounded-xl border border-[#3D444D] bg-[#151B23] shadow-2xl">
+        <div
+          role="menu"
+          className="absolute right-0 top-9 z-50 w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-xl shadow-black/25"
+        >
           <button
             type="button"
+            role="menuitem"
             onClick={() => {
               setOpenMenuId(null);
               onEdit(subscription);
             }}
-            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-sm text-[#C9D1D9] hover:bg-[#21262D]"
+            className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-foreground hover:bg-accent"
           >
-            <Edit size={15} />
+            <Edit className="size-3.5" />
             Edit
           </button>
 
           <button
             type="button"
+            role="menuitem"
             onClick={() => {
               setOpenMenuId(null);
               onStatusChange(subscription);
             }}
-            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-sm text-[#C9D1D9] hover:bg-[#21262D]"
+            className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-foreground hover:bg-accent"
           >
-            <CreditCard size={15} />
+            <CreditCard className="size-3.5" />
             {subscription.isActive ? "Mark inactive" : "Mark active"}
           </button>
 
           <button
             type="button"
+            role="menuitem"
             onClick={() => {
               setOpenMenuId(null);
               onDelete(subscription.id);
             }}
-            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10"
+            className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-red-400 hover:bg-red-500/10"
           >
-            <Trash2 size={15} />
+            <Trash2 className="size-3.5" />
             Delete
           </button>
         </div>
@@ -771,53 +666,27 @@ function SubscriptionMenu({
   );
 }
 
-function SubscriptionBottomSkeleton() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 2 }).map((_, index) => (
-        <div
-          key={index}
-          className="animate-pulse rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4"
-        >
-          <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-[#151B23]" />
+function SubscriptionRowsSkeleton({ compact = false }: { compact?: boolean }) {
+  const rows = compact ? 2 : 6;
 
-            <div className="space-y-3">
-              <div className="h-4 w-40 rounded bg-[#151B23]" />
-              <div className="h-3 w-28 rounded bg-[#151B23]" />
-              <div className="h-3 w-52 rounded bg-[#151B23]" />
+  return (
+    <div className="divide-y divide-border/60 px-4 sm:px-5">
+      {Array.from({ length: rows }).map((_, index) => (
+        <div key={index} className="flex items-center justify-between gap-3 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <LoadingSkeleton className="size-9 shrink-0 rounded-lg" />
+            <div>
+              <LoadingSkeleton className="h-4 w-36" />
+              <LoadingSkeleton className="mt-1.5 h-3 w-24" />
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <LoadingSkeleton className="hidden h-3 w-28 lg:block" />
+            <LoadingSkeleton className="h-4 w-20" />
+            <LoadingSkeleton className="size-8 rounded-lg" />
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function EmptyState({ onOpen }: { onOpen: () => void }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-[#3D444D] bg-[#0D1117] px-6 py-14 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#151B23] text-[#58A6FF]">
-        <CreditCard size={22} />
-      </div>
-
-      <h2 className="mt-4 text-lg font-semibold text-white">
-        No subscriptions found
-      </h2>
-
-      <p className="mx-auto mt-2 max-w-md text-sm text-[#8B949E]">
-        Add Netflix, Spotify, ChatGPT, Canva, hosting, or any paid plan you want
-        to track.
-      </p>
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className="mt-5 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#2ea043]"
-      >
-        <Plus size={17} />
-        Add Subscription
-      </button>
     </div>
   );
 }

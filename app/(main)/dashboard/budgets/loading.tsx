@@ -1,171 +1,100 @@
+import { LoadingSkeleton } from "@/components/ui/foundation";
+
+function BudgetRowSkeleton() {
+  return (
+    <div className="grid gap-3 px-4 py-4 sm:px-5 lg:grid-cols-[minmax(12rem,1fr)_minmax(14rem,1.15fr)_minmax(12rem,.8fr)_auto] lg:items-center">
+      <div className="flex items-center gap-3">
+        <LoadingSkeleton className="size-9 shrink-0 rounded-lg" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <LoadingSkeleton className="h-4 w-36 max-w-full" />
+          <LoadingSkeleton className="h-3 w-28 max-w-full" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="flex justify-between">
+          <LoadingSkeleton className="h-3 w-28" />
+          <LoadingSkeleton className="h-3 w-8" />
+        </div>
+        <LoadingSkeleton className="h-1.5 w-full rounded-full" />
+      </div>
+      <div className="flex justify-between gap-3 lg:block lg:space-y-2 lg:text-right">
+        <LoadingSkeleton className="h-4 w-20 lg:ml-auto" />
+        <LoadingSkeleton className="h-3 w-24 lg:ml-auto" />
+      </div>
+      <LoadingSkeleton className="size-9 justify-self-end rounded-lg" />
+    </div>
+  );
+}
+
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-[#010409] px-4 py-6 text-[#C9D1D9] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="h-11 w-32 animate-pulse rounded-xl bg-[#21262D]" />
-        </section>
+    <main className="w-full min-w-0 space-y-4 text-foreground">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <LoadingSkeleton className="h-7 w-32" />
+          <LoadingSkeleton className="h-4 w-72 max-w-full" />
+        </div>
+        <LoadingSkeleton className="h-10 w-32 rounded-lg" />
+      </header>
 
-        <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="h-6 w-32 animate-pulse rounded bg-[#21262D]" />
-              <div className="mt-2 h-4 w-64 animate-pulse rounded bg-[#21262D]" />
-            </div>
-
-            <div className="flex w-full items-center gap-3 lg:w-auto">
-              <div className="h-11 w-11 animate-pulse rounded-2xl bg-[#21262D]" />
-
-              <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 lg:w-65 lg:flex-none">
-                <div className="h-10 animate-pulse rounded-xl bg-[#21262D]" />
-                <div className="h-10 animate-pulse rounded-xl bg-[#21262D]" />
-              </div>
-
-              <div className="h-11 w-11 animate-pulse rounded-2xl bg-[#21262D]" />
+      <section className="grid overflow-hidden rounded-xl border border-border/70 bg-card sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="relative flex min-h-24 items-center gap-3 px-4 py-3 after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border/70 sm:after:hidden xl:after:inset-y-[20%] xl:after:right-0 xl:after:left-auto xl:after:h-auto xl:after:w-px last:after:hidden">
+            <LoadingSkeleton className="size-8 shrink-0 rounded-lg" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <LoadingSkeleton className="h-3 w-24" />
+              <LoadingSkeleton className="h-6 w-28" />
+              <LoadingSkeleton className="h-3 w-32 max-w-full" />
             </div>
           </div>
-        </section>
+        ))}
+      </section>
 
-        <section className="space-y-2">
-          <div className="flex items-center justify-between md:hidden">
-            <div className="h-3 w-16 animate-pulse rounded bg-[#21262D]" />
-            <div className="h-3 w-28 animate-pulse rounded bg-[#21262D]" />
-          </div>
+      <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-card/60 p-3 sm:flex-row">
+        <LoadingSkeleton className="h-10 w-full rounded-lg sm:w-72" />
+        <LoadingSkeleton className="h-10 w-full rounded-lg sm:ml-auto sm:w-40" />
+      </div>
 
-          <div className="relative">
-            <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-4 md:overflow-visible md:pb-0">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="min-w-57.5 snap-start rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4 md:min-w-0"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="h-4 w-24 animate-pulse rounded bg-[#21262D]" />
-                      <div className="mt-3 h-7 w-28 animate-pulse rounded bg-[#21262D]" />
-                      <div className="mt-2 h-3 w-32 animate-pulse rounded bg-[#21262D]" />
-                    </div>
-
-                    <div className="h-10 w-10 animate-pulse rounded-xl bg-[#21262D]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pointer-events-none absolute bottom-3 right-0 top-0 w-12 bg-linear-to-l from-[#010409] to-transparent md:hidden" />
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4 sm:p-5">
-          <div className="flex items-start gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-xl bg-[#21262D]" />
-
-            <div className="flex-1">
-              <div className="h-5 w-52 animate-pulse rounded bg-[#21262D]" />
-              <div className="mt-2 h-4 w-64 animate-pulse rounded bg-[#21262D]" />
+      <section className="rounded-xl border border-border/70 bg-card px-4 py-4 sm:px-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="flex flex-1 items-center gap-3">
+            <LoadingSkeleton className="size-9 rounded-lg" />
+            <div className="space-y-2">
+              <LoadingSkeleton className="h-4 w-44" />
+              <LoadingSkeleton className="h-3 w-52 max-w-full" />
             </div>
           </div>
+          <LoadingSkeleton className="h-2 flex-[1.35] rounded-full" />
+          <LoadingSkeleton className="h-8 w-28" />
+        </div>
+      </section>
 
-          <div className="mt-4 h-14 animate-pulse rounded-xl bg-[#151B23]" />
-
-          <div className="mt-4">
-            <div className="mb-2 flex items-center justify-between">
-              <div className="h-3 w-36 animate-pulse rounded bg-[#21262D]" />
-              <div className="h-3 w-10 animate-pulse rounded bg-[#21262D]" />
-            </div>
-            <div className="h-2 animate-pulse rounded-full bg-[#21262D]" />
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="overflow-hidden rounded-xl border border-border/70 bg-card">
+          <div className="space-y-2 border-b border-border/70 px-4 py-3 sm:px-5">
+            <LoadingSkeleton className="h-4 w-28" />
+            <LoadingSkeleton className="h-3 w-16" />
           </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-xl bg-[#151B23] px-3 py-3 sm:px-4 sm:py-4"
-              >
-                <div className="h-3 w-12 animate-pulse rounded bg-[#21262D]" />
-                <div className="mt-2 h-5 w-16 animate-pulse rounded bg-[#21262D]" />
-              </div>
+          <div className="divide-y divide-border/60">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <BudgetRowSkeleton key={index} />
             ))}
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="h-6 w-28 animate-pulse rounded bg-[#21262D]" />
-              <div className="mt-2 h-4 w-72 animate-pulse rounded bg-[#21262D]" />
+        <aside className="self-start overflow-hidden rounded-xl border border-border/70 bg-card">
+          {Array.from({ length: 3 }).map((_, section) => (
+            <div key={section} className="border-b border-border/70 px-4 py-4 last:border-b-0">
+              <LoadingSkeleton className="h-4 w-32" />
+              <LoadingSkeleton className="mt-2 h-3 w-44" />
+              <div className="mt-4 space-y-3">
+                {Array.from({ length: 3 }).map((__, item) => (
+                  <LoadingSkeleton key={item} className="h-8 w-full" />
+                ))}
+              </div>
             </div>
-
-            <div className="h-11 w-full animate-pulse rounded-xl bg-[#21262D] md:w-40" />
-          </div>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 flex-1 gap-3">
-                    <div className="h-11 w-11 animate-pulse rounded-xl bg-[#21262D]" />
-
-                    <div className="flex-1">
-                      <div className="h-5 w-40 animate-pulse rounded bg-[#21262D]" />
-                      <div className="mt-2 h-4 w-32 animate-pulse rounded bg-[#21262D]" />
-                    </div>
-                  </div>
-
-                  <div className="h-10 w-10 animate-pulse rounded-xl bg-[#21262D]" />
-                </div>
-
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="h-3 w-40 animate-pulse rounded bg-[#21262D]" />
-                    <div className="h-3 w-10 animate-pulse rounded bg-[#21262D]" />
-                  </div>
-                  <div className="h-2 animate-pulse rounded-full bg-[#21262D]" />
-                </div>
-
-                <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
-                  {Array.from({ length: 3 }).map((_, statIndex) => (
-                    <div
-                      key={statIndex}
-                      className="rounded-xl bg-[#151B23] px-3 py-3 sm:px-4 sm:py-4"
-                    >
-                      <div className="h-3 w-12 animate-pulse rounded bg-[#21262D]" />
-                      <div className="mt-2 h-5 w-16 animate-pulse rounded bg-[#21262D]" />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 h-4 w-3/4 animate-pulse rounded bg-[#21262D]" />
-              </div>
-            ))}
-          </div>
-
-          <aside className="space-y-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-5"
-              >
-                <div className="h-6 w-40 animate-pulse rounded bg-[#21262D]" />
-                <div className="mt-2 h-4 w-56 animate-pulse rounded bg-[#21262D]" />
-
-                <div className="mt-4 space-y-3">
-                  {Array.from({ length: 3 }).map((_, itemIndex) => (
-                    <div
-                      key={itemIndex}
-                      className="h-14 animate-pulse rounded-xl bg-[#151B23]"
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </aside>
-        </section>
+          ))}
+        </aside>
       </div>
     </main>
   );

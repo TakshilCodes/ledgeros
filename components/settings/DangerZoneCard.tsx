@@ -10,44 +10,37 @@ export default function DangerZoneCard() {
 
   return (
     <>
-      <section className="rounded-2xl border border-red-500/30 bg-[#0D1117] p-4 sm:p-5">
-        <div className="mb-5 flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10">
-            <AlertTriangle className="h-5 w-5 text-red-400" />
+      <section className="overflow-hidden rounded-xl border border-red-500/25 bg-card">
+        <div className="flex items-start gap-2.5 px-4 py-4 sm:px-5">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-red-500/10">
+            <AlertTriangle className="size-4 text-red-400" aria-hidden="true" />
           </div>
-
           <div>
-            <h2 className="text-base font-semibold text-white">
-              Danger Zone
-            </h2>
-            <p className="mt-1 text-sm text-[#8B949E]">
+            <h2 className="text-sm font-semibold text-foreground">Danger zone</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Permanent actions that cannot be undone.
             </p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-white">
-                Delete LedgerOS account
-              </p>
-              <p className="mt-1 max-w-xl text-xs leading-5 text-[#8B949E]">
-                This will permanently delete your profile, expenses,
-                subscriptions, budgets, recurring expenses, and all related
-                account data.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              className="inline-flex cursor-pointer h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition hover:bg-red-500"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete account
-            </button>
+        <div className="flex flex-col gap-3 border-t border-red-500/20 bg-red-500/5 px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Delete LedgerOS account
+            </p>
+            <p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground">
+              Permanently deletes your profile and all expenses, subscriptions,
+              budgets, recurring expenses, and related account data.
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+            Delete account
+          </button>
         </div>
       </section>
 

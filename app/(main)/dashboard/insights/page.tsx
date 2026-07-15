@@ -1,5 +1,7 @@
 import { getInsights } from "@/actions/insights/get-insights";
 import InsightsClient from "@/components/insights/insights-client";
+import { EmptyState } from "@/components/ui/foundation";
+import { AlertTriangle } from "lucide-react";
 
 type Props = {
   searchParams: Promise<{
@@ -10,30 +12,27 @@ type Props = {
 
 export default async function InsightsPage({ searchParams }: Props) {
   const params = await searchParams;
-
   const currentDate = new Date();
-
   const month = Number(params.month || currentDate.getMonth() + 1);
   const year = Number(params.year || currentDate.getFullYear());
+  const result = await getInsights({ month, year });
 
-  const result = await getInsights({
-  month,
-  year,
-});
+  if (!result.ok || !result.data) {
+    return (
+      <EmptyState
+        icon={AlertTriangle}
+        title="Unable to load insights"
+        description={result.error || "Failed to load insights."}
+        className="border-red-500/20 bg-red-500/5 py-10"
+      />
+    );
+  }
 
-if (!result.ok || !result.data) {
   return (
-    <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
-      {result.error || "Failed to load insights"}
-    </div>
+    <InsightsClient
+      data={result.data}
+      selectedMonth={month}
+      selectedYear={year}
+    />
   );
-}
-
-return (
-  <InsightsClient
-    data={result.data}
-    selectedMonth={month}
-    selectedYear={year}
-  />
-);
 }

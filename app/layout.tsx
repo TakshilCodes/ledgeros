@@ -86,7 +86,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen overflow-x-hidden bg-[#010409] font-sans text-white antialiased">
+      <body className="min-h-screen overflow-x-hidden bg-background font-sans text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

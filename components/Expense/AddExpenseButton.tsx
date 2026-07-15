@@ -10,7 +10,7 @@ export default function AddExpenseButton() {
     <button
       type="button"
       onClick={onOpen}
-      className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#238636] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#2ea043]"
+      className="inline-flex cursor-pointer items-center justify-center gap-2 h-9 rounded-lg bg-primary px-4 text-sm font-medium text-white transition hover:bg-green-500"
     >
       <Plus size={17} />
       Add Expense

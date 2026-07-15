@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpDown, CalendarDays, Filter, Search, X } from "lucide-react";
 
+import { FilterBar } from "@/components/ui/foundation";
+import { SelectField } from "@/components/ui/select";
+
 export default function ExpenseFilters() {
   const router = useRouter();
   const pathname = usePathname();
@@ -75,85 +78,92 @@ export default function ExpenseFilters() {
   }, [searchValue]);
 
   return (
-    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-      <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto]">
+    <FilterBar className="p-3">
+      <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1.5fr)_minmax(150px,1fr)_minmax(140px,1fr)_minmax(140px,1fr)_auto]">
         <div className="relative">
           <Search
-            size={17}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6E7681]"
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70"
           />
 
           <input
             type="text"
+            aria-label="Search expenses"
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
             placeholder="Search expenses..."
-            className="h-11 w-full rounded-xl border border-[#3D444D] bg-[#010409] pl-10 pr-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+            className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm text-white outline-none placeholder:text-muted-foreground/70 focus:border-blue-400"
           />
         </div>
 
         <div className="relative">
           <Filter
             size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6E7681]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70"
           />
 
-          <select
+          <SelectField
+            ariaLabel="Filter by category"
             value={category}
-            onChange={(event) => {
-              setCategory(event.target.value);
-              updateParam("category", event.target.value);
+            onValueChange={(value) => {
+              setCategory(value);
+              updateParam("category", value);
             }}
-            className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-[#3D444D] bg-[#010409] pl-9 pr-3 text-sm text-white outline-none focus:border-[#58A6FF]"
-          >
-            <option value="ALL">All Categories</option>
-            <option value="FOOD">Food</option>
-            <option value="TRAVEL">Travel</option>
-            <option value="SHOPPING">Shopping</option>
-            <option value="SUBSCRIPTION">Subscription</option>
-            <option value="OTHER">Other</option>
-          </select>
+            options={[
+              { value: "ALL", label: "All categories" },
+              { value: "FOOD", label: "Food" },
+              { value: "TRAVEL", label: "Travel" },
+              { value: "SHOPPING", label: "Shopping" },
+              { value: "SUBSCRIPTION", label: "Subscription" },
+              { value: "OTHER", label: "Other" },
+            ]}
+            className="h-10 w-full pl-9"
+          />
         </div>
 
         <div className="relative">
           <CalendarDays
             size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6E7681]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70"
           />
 
-          <select
+          <SelectField
+            ariaLabel="Filter by date"
             value={date}
-            onChange={(event) => {
-              setDate(event.target.value);
-              updateParam("date", event.target.value);
+            onValueChange={(value) => {
+              setDate(value);
+              updateParam("date", value);
             }}
-            className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-[#3D444D] bg-[#010409] pl-9 pr-3 text-sm text-white outline-none focus:border-[#58A6FF]"
-          >
-            <option value="all">All Dates</option>
-            <option value="today">Today</option>
-            <option value="this-month">This Month</option>
-          </select>
+            options={[
+              { value: "all", label: "All dates" },
+              { value: "today", label: "Today" },
+              { value: "this-month", label: "This month" },
+            ]}
+            className="h-10 w-full pl-9"
+          />
         </div>
 
         <div className="relative">
           <ArrowUpDown
             size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6E7681]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70"
           />
 
-          <select
+          <SelectField
+            ariaLabel="Sort expenses"
             value={sort}
-            onChange={(event) => {
-              setSort(event.target.value);
-              updateParam("sort", event.target.value);
+            onValueChange={(value) => {
+              setSort(value);
+              updateParam("sort", value);
             }}
-            className="h-11 w-full cursor-pointer appearance-none rounded-xl border border-[#3D444D] bg-[#010409] pl-9 pr-3 text-sm text-white outline-none focus:border-[#58A6FF]"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="highest">Highest</option>
-            <option value="lowest">Lowest</option>
-          </select>
+            options={[
+              { value: "newest", label: "Newest" },
+              { value: "oldest", label: "Oldest" },
+              { value: "highest", label: "Highest" },
+              { value: "lowest", label: "Lowest" },
+            ]}
+            className="h-10 w-full pl-9"
+          />
         </div>
 
         {hasFilters ? (
@@ -161,13 +171,13 @@ export default function ExpenseFilters() {
             type="button"
             onClick={clearFilters}
             disabled={isPending}
-            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-muted px-4 text-sm text-foreground transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <X size={16} />
+            <X size={15} aria-hidden="true" />
             Clear
           </button>
         ) : null}
       </div>
-    </section>
+    </FilterBar>
   );
 }

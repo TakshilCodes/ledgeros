@@ -1,145 +1,73 @@
-function SkeletonBlock({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-[#151B23] ${className}`} />;
-}
-
-function StatCardSkeleton() {
-  return (
-    <div className="min-w-57.5 snap-start rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <SkeletonBlock className="h-4 w-28" />
-          <SkeletonBlock className="mt-3 h-7 w-32" />
-          <SkeletonBlock className="mt-2 h-3 w-24" />
-        </div>
-
-        <SkeletonBlock className="h-9 w-9 rounded-xl" />
-      </div>
-    </div>
-  );
-}
-
-function FiltersSkeleton() {
-  return (
-    <div className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-      <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_auto] lg:items-end">
-        <div className="space-y-2">
-          <SkeletonBlock className="h-3 w-16" />
-          <SkeletonBlock className="h-10 w-full" />
-        </div>
-
-        <div className="space-y-2">
-          <SkeletonBlock className="h-3 w-20" />
-          <SkeletonBlock className="h-10 w-full" />
-        </div>
-
-        <div className="space-y-2">
-          <SkeletonBlock className="h-3 w-16" />
-          <SkeletonBlock className="h-10 w-full" />
-        </div>
-
-        <SkeletonBlock className="h-10 w-full lg:w-28" />
-      </div>
-    </div>
-  );
-}
-
-function SubscriptionListSkeleton() {
-  return (
-    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <SkeletonBlock className="h-5 w-36" />
-          <SkeletonBlock className="mt-2 h-3 w-52" />
-        </div>
-
-        <SkeletonBlock className="h-9 w-28" />
-      </div>
-
-      <div className="space-y-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-2xl border border-[#3D444D] bg-[#010409] p-4"
-          >
-            <div className="hidden items-center justify-between gap-4 md:flex">
-              <div className="flex min-w-0 flex-1 items-center gap-4">
-                <SkeletonBlock className="h-12 w-12 rounded-2xl" />
-
-                <div className="min-w-0 flex-1 space-y-3">
-                  <SkeletonBlock className="h-4 w-40" />
-                  <SkeletonBlock className="h-3 w-64 max-w-full" />
-                  <div className="flex gap-2">
-                    <SkeletonBlock className="h-6 w-20 rounded-full" />
-                    <SkeletonBlock className="h-6 w-24 rounded-full" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="space-y-2 text-right">
-                  <SkeletonBlock className="h-4 w-24" />
-                  <SkeletonBlock className="h-3 w-20" />
-                </div>
-
-                <SkeletonBlock className="h-8 w-8 rounded-lg" />
-                <SkeletonBlock className="h-8 w-8 rounded-lg" />
-              </div>
-            </div>
-
-            <div className="md:hidden">
-              <div className="flex items-start gap-3">
-                <SkeletonBlock className="h-11 w-11 rounded-xl" />
-
-                <div className="min-w-0 flex-1 space-y-3">
-                  <SkeletonBlock className="h-4 w-36" />
-                  <SkeletonBlock className="h-3 w-44" />
-                  <div className="flex flex-wrap gap-2">
-                    <SkeletonBlock className="h-5 w-20 rounded-full" />
-                    <SkeletonBlock className="h-5 w-24 rounded-full" />
-                  </div>
-                  <SkeletonBlock className="h-4 w-28" />
-                </div>
-
-                <SkeletonBlock className="h-8 w-8 rounded-lg" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
+import { LoadingSkeleton } from "@/components/ui/foundation";
 
 export default function SubscriptionsLoading() {
   return (
-    <div className="min-h-screen bg-[#010409] px-4 py-5 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <SkeletonBlock className="h-7 w-40" />
-            <SkeletonBlock className="mt-2 h-4 w-72 max-w-full" />
-          </div>
+    <main className="w-full min-w-0 space-y-4 text-foreground">
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <LoadingSkeleton className="h-5 w-44" />
+          <LoadingSkeleton className="mt-2 h-4 w-72 max-w-full" />
+        </div>
+        <LoadingSkeleton className="h-9 w-36 rounded-lg" />
+      </section>
 
-          <SkeletonBlock className="h-10 w-full sm:w-40" />
+      <section className="grid rounded-xl border border-border/70 bg-card px-3.5 py-0.5 sm:grid-cols-2 sm:px-4 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className={`flex items-center gap-2.5 py-2.5 sm:px-4 sm:first:pl-0 ${
+              index > 0 ? "border-t border-border sm:border-t-0" : ""
+            } ${index >= 2 ? "sm:border-t sm:border-border xl:border-t-0" : ""}`}
+          >
+            <LoadingSkeleton className="size-7 shrink-0 rounded-lg" />
+            <div className="min-w-0 flex-1">
+              <LoadingSkeleton className="h-3 w-24" />
+              <LoadingSkeleton className="mt-1.5 h-5 w-24" />
+              <LoadingSkeleton className="mt-1.5 h-3 w-28 max-w-full" />
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="rounded-xl bg-card p-3 ring-1 ring-border/70">
+        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-[minmax(260px,1.5fr)_minmax(150px,1fr)_minmax(150px,1fr)]">
+          <LoadingSkeleton className="h-10 w-full sm:col-span-2 xl:col-span-1" />
+          <LoadingSkeleton className="h-10 w-full rounded-lg" />
+          <LoadingSkeleton className="h-10 w-full rounded-lg" />
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border/70 bg-card">
+        <div className="border-b border-border/60 px-4 py-3 sm:px-5">
+          <LoadingSkeleton className="h-4 w-32" />
+          <LoadingSkeleton className="mt-1.5 h-3 w-48" />
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between md:hidden">
-            <SkeletonBlock className="h-3 w-20" />
-            <SkeletonBlock className="h-3 w-28" />
-          </div>
-
-          <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <StatCardSkeleton key={index} />
-            ))}
-          </div>
+        <div className="divide-y divide-border/60 px-4 sm:px-5">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <div
+              key={index}
+              className="grid gap-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center lg:grid-cols-[minmax(0,1fr)_minmax(160px,auto)_auto]"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <LoadingSkeleton className="size-9 shrink-0 rounded-lg" />
+                <div>
+                  <LoadingSkeleton className="h-4 w-36" />
+                  <LoadingSkeleton className="mt-1.5 h-3 w-24" />
+                </div>
+              </div>
+              <div className="ml-12 sm:ml-0">
+                <LoadingSkeleton className="h-3 w-28" />
+                <LoadingSkeleton className="mt-1.5 h-3 w-20" />
+              </div>
+              <div className="flex items-center justify-between gap-2 sm:col-start-2 sm:row-start-1 lg:col-start-3">
+                <LoadingSkeleton className="h-4 w-20" />
+                <LoadingSkeleton className="size-8 rounded-lg" />
+              </div>
+            </div>
+          ))}
         </div>
-
-        <FiltersSkeleton />
-
-        <SubscriptionListSkeleton />
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

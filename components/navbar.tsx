@@ -2,17 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
+import { LogOut, Menu, Plus, Settings, User } from "lucide-react";
 
-import {
-  Plus,
-  Search,
-  User,
-  Settings,
-  LogOut,
-  Menu,
-} from "lucide-react";
 import { useExpenseModal } from "@/store/expense-modal-store";
 import { useSidebarStore } from "@/store/sidebar-store";
 
@@ -25,114 +18,99 @@ function getPageTitle(pathname: string) {
   if (pathname.includes("/search")) return "Search";
   if (pathname.includes("/insights")) return "Insights";
   if (pathname.includes("/settings")) return "Settings";
-
   return "LedgerOS";
 }
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-
-  const title = getPageTitle(pathname);
-
   const [open, setOpen] = useState(false);
-
   const { onOpen: openExpenseModal } = useExpenseModal();
   const { onOpen: openSidebar } = useSidebarStore();
-
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const showGlobalExpenseAction = pathname !== "/dashboard/expenses";
 
   async function handleLogout() {
-    await signOut({
-      redirect: false,
-    });
-
+    await signOut({ redirect: false });
     router.push("/");
     router.refresh();
   }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#3D444D] bg-[#010409]/90 px-4 py-3 backdrop-blur md:px-6">
-      <div className="flex items-center justify-between gap-3">
-
-        {/* Left */}
-        <div>
-          <h1 className="text-xl font-semibold text-white md:text-2xl">
-            {title}
-          </h1>
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-2">
-          {/* Add Expense */}
-          <button
-            onClick={openExpenseModal}
-            className="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#2ea043] px-3 text-sm font-semibold text-white transition hover:bg-[#238636] md:px-4"
-          >
-            <Plus size={18} />
-
-            <span className="hidden sm:inline">Add Expense</span>
-          </button>
-
-          {/* Profile Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              type="button"
-              onClick={() => setOpen((prev) => !prev)}
-              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
-            >
-              <User size={18} />
-            </button>
-
-            {open && (
-              <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-[#3D444D] bg-[#0D1117] shadow-2xl">
-                <Link
-                  href="/dashboard/settings"
-                  onClick={() => setOpen(false)}
-                  className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-[#8B949E] transition hover:bg-[#151B23] hover:text-white"
-                >
-                  <Settings size={17} />
-                  Settings
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
-                >
-                  <LogOut size={17} />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
+    <header className="sticky top-0 z-40 h-16 border-b border-border/70 bg-background/85 backdrop-blur-xl">
+      <div className="flex h-full items-center justify-between gap-4 px-4 sm:px-5 md:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={openSidebar}
-            className="flex h-10 w-10 items-center justify-center rounded-xl cursor-pointer border border-[#3D444D] bg-[#0D1117] text-[#8B949E] transition hover:bg-[#151B23] hover:text-white md:hidden"
-            aria-label="Open sidebar"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+            aria-label="Open navigation"
           >
-            <Menu size={18} />
+            <Menu className="size-[18px]" />
           </button>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground sm:hidden">LedgerOS</p>
+            <h1 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">{getPageTitle(pathname)}</h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {showGlobalExpenseAction ? (
+            <button
+              type="button"
+              onClick={openExpenseModal}
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-green-500 focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50 sm:px-4"
+            >
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">Add expense</span>
+            </button>
+          ) : null}
+
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setOpen((value) => !value)}
+              className="flex size-9 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-border hover:bg-muted hover:text-foreground"
+              aria-label="Open profile menu"
+              aria-expanded={open}
+              aria-haspopup="menu"
+            >
+              <User className="size-4" />
+            </button>
+
+            {open ? (
+              <div role="menu" className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-xl shadow-black/25">
+                <Link
+                  href="/dashboard/settings"
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <Settings className="size-4" />
+                  Settings
+                </Link>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10"
+                >
+                  <LogOut className="size-4" />
+                  Log out
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </header>

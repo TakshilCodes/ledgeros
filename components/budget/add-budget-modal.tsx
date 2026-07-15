@@ -1,5 +1,7 @@
 "use client";
 
+import { StyledSelect } from "@/components/ui/select";
+
 import { createBudget } from "@/actions/budgets/create-budget";
 import {
   Dialog,
@@ -160,25 +162,25 @@ export default function AddBudgetModal() {
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && handleClose()}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto rounded-2xl border-[#3D444D] bg-[#0D1117] p-0 text-[#C9D1D9] shadow-2xl sm:max-w-2xl">
-        <div className="border-b border-[#21262D] px-5 py-5 sm:px-6">
+      <DialogContent className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-xl border-border/70 bg-card p-0 text-foreground shadow-2xl sm:max-w-2xl">
+        <div className="sticky top-0 z-10 border-b border-border/70 bg-card px-5 py-4 pr-12 sm:px-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold tracking-tight text-white">
+            <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
               Add Budget
             </DialogTitle>
-            <p className="mt-1 text-sm leading-6 text-[#8B949E]">
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Create a monthly, category, or daily spending limit.
             </p>
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-5 py-5 sm:px-6">
+        <form onSubmit={handleSubmit} className="space-y-5 px-5 py-5 sm:px-6">
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-[#C9D1D9]">
+            <label className="block text-xs font-medium text-muted-foreground">
               Budget Type
             </label>
 
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-3">
               {budgetTypes.map((budgetType) => {
                 const isSelected = type === budgetType.value;
 
@@ -193,16 +195,16 @@ export default function AddBudgetModal() {
                         setCategory("");
                       }
                     }}
-                    className={`min-h-26 rounded-2xl border p-4 text-left transition cursor-pointer ${
+                    className={`min-h-20 cursor-pointer rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
                       isSelected
-                        ? "border-[#238636] bg-[#238636]/10 shadow-[0_0_0_1px_rgba(35,134,54,0.35)]"
-                        : "border-[#3D444D] bg-[#151B23] hover:border-[#58A6FF]/50 hover:bg-[#21262D]"
+                        ? "border-primary/60 bg-primary/10"
+                        : "border-border/70 bg-muted/40 hover:border-border hover:bg-muted"
                     }`}
                   >
                     <p className="text-sm font-semibold text-white">
                       {budgetType.label}
                     </p>
-                    <p className="mt-2 text-xs leading-5 text-[#8B949E]">
+                    <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
                       {budgetType.description}
                     </p>
                   </button>
@@ -211,11 +213,11 @@ export default function AddBudgetModal() {
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label
                 htmlFor="budget-name"
-                className="block text-sm font-semibold text-[#C9D1D9]"
+                className="block text-xs font-medium text-muted-foreground"
               >
                 Budget Name
               </label>
@@ -231,14 +233,14 @@ export default function AddBudgetModal() {
                       ? "Daily Spending Limit"
                       : "Food Budget"
                 }
-                className="h-12 w-full rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               />
             </div>
 
             <div className="space-y-2">
               <label
                 htmlFor="budget-amount"
-                className="block text-sm font-semibold text-[#C9D1D9]"
+                className="block text-xs font-medium text-muted-foreground"
               >
                 Amount
               </label>
@@ -256,7 +258,7 @@ export default function AddBudgetModal() {
                       ? "18000"
                       : "6000"
                 }
-                className="h-12 w-full rounded-xl border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               />
             </div>
           </div>
@@ -265,16 +267,16 @@ export default function AddBudgetModal() {
             <div className="space-y-2">
               <label
                 htmlFor="budget-category"
-                className="block text-sm font-semibold text-[#C9D1D9]"
+                className="block text-xs font-medium text-muted-foreground"
               >
                 Category
               </label>
 
-              <select
+              <StyledSelect
                 id="budget-category"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                className="h-12 w-full rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-10 w-full cursor-pointer rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               >
                 <option value="">Select category</option>
 
@@ -283,62 +285,62 @@ export default function AddBudgetModal() {
                     {formatCategory(item)}
                   </option>
                 ))}
-              </select>
+              </StyledSelect>
             </div>
           ) : null}
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label
                 htmlFor="budget-month"
-                className="block text-sm font-semibold text-[#C9D1D9]"
+                className="block text-xs font-medium text-muted-foreground"
               >
                 Month
               </label>
 
-              <select
+              <StyledSelect
                 id="budget-month"
                 value={month}
                 onChange={(event) => setMonth(event.target.value)}
-                className="h-12 w-full rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-10 w-full cursor-pointer rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               >
                 {getMonthOptions().map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
                 ))}
-              </select>
+              </StyledSelect>
             </div>
 
             <div className="space-y-2">
               <label
                 htmlFor="budget-year"
-                className="block text-sm font-semibold text-[#C9D1D9]"
+                className="block text-xs font-medium text-muted-foreground"
               >
                 Year
               </label>
 
-              <select
+              <StyledSelect
                 id="budget-year"
                 value={year}
                 onChange={(event) => setYear(event.target.value)}
-                className="h-12 w-full rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-white outline-none transition focus:border-[#58A6FF] focus:ring-2 focus:ring-[#58A6FF]/10"
+                className="h-10 w-full cursor-pointer rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
               >
                 {getYearOptions().map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
                 ))}
-              </select>
+              </StyledSelect>
             </div>
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-[#21262D] pt-5 sm:flex-row sm:justify-end">
+          <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-5 flex flex-col-reverse gap-2 border-t border-border/70 bg-card/95 px-5 py-4 sm:-mx-6 sm:flex-row sm:justify-end sm:px-6">
             <button
               type="button"
               disabled={isPending}
               onClick={handleClose}
-              className="inline-flex h-11 items-center justify-center cursor-pointer rounded-xl border border-[#3D444D] bg-[#151B23] px-5 text-sm font-semibold text-[#C9D1D9] transition hover:bg-[#21262D] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>
@@ -346,7 +348,7 @@ export default function AddBudgetModal() {
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex h-11 items-center justify-center cursor-pointer gap-2 rounded-xl bg-[#238636] px-5 text-sm font-semibold text-white transition hover:bg-[#2EA043] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? (
                 <Loader2 size={16} className="animate-spin" />

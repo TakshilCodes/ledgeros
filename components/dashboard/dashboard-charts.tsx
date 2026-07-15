@@ -2,23 +2,14 @@
 
 import {
   ArcElement,
-  BarElement,
-  CategoryScale,
   Chart as ChartJS,
   Legend,
-  LinearScale,
   Tooltip,
+  type TooltipItem,
 } from "chart.js";
-import { Bar, Doughnut } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 
-ChartJS.register(
-  ArcElement,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend
-);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 type CategoryBreakdown = {
   category: string;
@@ -61,28 +52,17 @@ export function SpendingDonutChart({ categories }: Props) {
     cutout: "68%",
     plugins: {
       legend: {
-        position: "bottom" as const,
-        labels: {
-          color: "#8B949E",
-          boxWidth: 10,
-          boxHeight: 10,
-          usePointStyle: true,
-          padding: 14,
-          font: {
-            size: 11,
-          },
-        },
+        display: false,
       },
       tooltip: {
         backgroundColor: "#151B23",
         titleColor: "#ffffff",
         bodyColor: "#C9D1D9",
-        borderColor: "#3D444D",
+        borderColor: "rgba(240, 246, 252, 0.1)",
         borderWidth: 1,
         callbacks: {
-          label: function (context: any) {
+          label(context: TooltipItem<"doughnut">) {
             const value = Number(context.raw || 0);
-
             return ` ${context.label}: ₹${value.toLocaleString("en-IN")}`;
           },
         },
@@ -91,80 +71,8 @@ export function SpendingDonutChart({ categories }: Props) {
   };
 
   return (
-    <div className="relative h-55 w-full">
+    <div className="relative h-56 w-full">
       <Doughnut data={data} options={options} />
-    </div>
-  );
-}
-
-export function SpendingBarChart({ categories }: Props) {
-  const data = {
-    labels: categories.map((category) => category.label),
-    datasets: [
-      {
-        label: "Amount Spent",
-        data: categories.map((category) => category.amount),
-        backgroundColor: "#58A6FF",
-        borderRadius: 8,
-        barThickness: 24,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: "#151B23",
-        titleColor: "#ffffff",
-        bodyColor: "#C9D1D9",
-        borderColor: "#3D444D",
-        borderWidth: 1,
-        callbacks: {
-          label: function (context: any) {
-            const value = Number(context.raw || 0);
-
-            return `₹${value.toLocaleString("en-IN")}`;
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: "#8B949E",
-          font: {
-            size: 11,
-          },
-        },
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        ticks: {
-          color: "#8B949E",
-          font: {
-            size: 11,
-          },
-          callback: function (value: any) {
-            return `₹${Number(value).toLocaleString("en-IN")}`;
-          },
-        },
-        grid: {
-          color: "#21262D",
-        },
-      },
-    },
-  };
-
-  return (
-    <div className="relative h-55 w-full">
-      <Bar data={data} options={options} />
     </div>
   );
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { StyledSelect } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
 import { createSubscription } from "@/actions/subscription/create-subscription";
 import { useSubscriptionModal } from "@/store/subscription-modal-store";
 import {
@@ -291,18 +294,18 @@ export function AddSubscriptionModal({ templates }: Props) {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-            <div className="relative max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-[#3D444D] bg-[#0D1117] text-white shadow-2xl">
+        <Dialog open={open} onOpenChange={(value) => !value && closeModal()}>
+            <DialogContent showCloseButton={false} className="max-h-[calc(100dvh-1.5rem)] max-w-2xl overflow-hidden border-border/70 bg-card p-0 text-foreground shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-[#3D444D] px-5 py-4">
+                <div className="flex items-start justify-between border-b border-border/70 px-5 py-4 pr-4 sm:px-6">
                     <div>
-                        <h2 className="text-lg font-semibold">
+                        <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
                             {step === "choose" && "Add Subscription"}
                             {step === "plan" && "Select Plan"}
                             {step === "form" && "Subscription Details"}
-                        </h2>
+                        </DialogTitle>
 
-                        <p className="mt-0.5 text-sm text-[#8B949E]">
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
                             {step === "choose" &&
                                 "Choose a subscription template or create a custom one."}
                             {step === "plan" &&
@@ -315,36 +318,37 @@ export function AddSubscriptionModal({ templates }: Props) {
                     <button
                         type="button"
                         onClick={closeModal}
-                        className="rounded-lg border border-[#3D444D] bg-[#151B23] p-2 text-[#8B949E] transition hover:text-white cursor-pointer"
+                        aria-label="Close add subscription dialog"
+                        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                     >
                         <X size={17} />
                     </button>
                 </div>
 
-                <div className="max-h-[calc(90vh-80px)] overflow-y-auto scrollbar-hide p-5">
+                <div className="max-h-[calc(100dvh-5.75rem)] overflow-y-auto p-4 sm:p-5">
                     {/* STEP 1: CHOOSE TEMPLATE / CUSTOM */}
                     {step === "choose" && (
                         <div className="space-y-4">
                             <div className="relative">
                                 <Search
                                     size={17}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]"
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                 />
 
                                 <input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search Netflix, ChatGPT, Canva..."
-                                    className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] pl-10 pr-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                                    className="h-10 w-full rounded-lg border border-border/80 bg-background pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                 />
                             </div>
 
                             <button
                                 type="button"
                                 onClick={chooseCustom}
-                                className="flex w-full items-center cursor-pointer gap-4 rounded-xl border border-[#3D444D] bg-[#151B23] p-4 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
+                                className="flex w-full cursor-pointer items-center gap-3 rounded-lg bg-muted/40 p-3 text-left ring-1 ring-border/60 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                             >
-                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#3D444D] bg-[#010409] text-[#58A6FF]">
+                                <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     <Plus size={20} />
                                 </div>
 
@@ -352,31 +356,31 @@ export function AddSubscriptionModal({ templates }: Props) {
                                     <h3 className="font-medium text-white">
                                         Custom Subscription
                                     </h3>
-                                    <p className="text-sm text-[#8B949E]">
+                                    <p className="text-sm text-muted-foreground">
                                         Add your own subscription manually.
                                     </p>
                                 </div>
                             </button>
 
-                            <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="grid gap-2 sm:grid-cols-2">
                                 {filteredTemplates.map((template) => (
                                     <button
                                         key={template.id}
                                         type="button"
                                         onClick={() => chooseTemplate(template)}
-                                        className="flex items-center gap-3 rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] p-3 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
+                                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-border/70 bg-muted/40 p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                                     >
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#3D444D] bg-[#010409]">
+                                        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/90 ring-1 ring-black/10">
                                             {template.logo ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img
                                                     src={template.logo}
                                                     alt={template.name}
                                                     loading="lazy"
-                                                    className="h-7 w-7 object-contain"
+                                                    className="h-7 w-7 object-contain drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
                                                 />
                                             ) : (
-                                                <CreditCard size={20} className="text-[#8B949E]" />
+                                                <CreditCard size={20} className="text-muted-foreground" />
                                             )}
                                         </div>
 
@@ -384,7 +388,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                             <h3 className="truncate text-sm font-medium text-white">
                                                 {template.name}
                                             </h3>
-                                            <p className="truncate text-xs text-[#8B949E]">
+                                            <p className="truncate text-xs text-muted-foreground">
                                                 {template.category}
                                             </p>
                                         </div>
@@ -392,7 +396,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                 ))}
 
                                 {filteredTemplates.length === 0 && (
-                                    <div className="col-span-full rounded-xl border border-dashed border-[#3D444D] p-8 text-center text-sm text-[#8B949E]">
+                                    <div className="col-span-full rounded-lg border border-dashed border-border/70 px-4 py-6 text-center text-sm text-muted-foreground">
                                         No templates found.
                                     </div>
                                 )}
@@ -411,24 +415,24 @@ export function AddSubscriptionModal({ templates }: Props) {
                                     setSelectedPlanId("");
                                     setError("");
                                 }}
-                                className="inline-flex items-center gap-2 text-sm text-[#8B949E] transition hover:text-white"
+                                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-white"
                             >
                                 <ChevronLeft size={16} />
                                 Back to templates
                             </button>
 
-                            <div className="flex items-center gap-3 rounded-xl border border-[#3D444D] bg-[#151B23] p-3">
-                                <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-[#3D444D] bg-[#010409]">
+                            <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-3 ring-1 ring-border/60">
+                                <div className="flex size-9 items-center justify-center overflow-hidden rounded-lg bg-white/90 ring-1 ring-black/10">
                                     {selectedTemplate.logo ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
                                             src={selectedTemplate.logo}
                                             alt={selectedTemplate.name}
                                             loading="lazy"
-                                            className="h-7 w-7 object-contain"
+                                            className="h-7 w-7 object-contain drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
                                         />
                                     ) : (
-                                        <CreditCard size={20} className="text-[#8B949E]" />
+                                        <CreditCard size={20} className="text-muted-foreground" />
                                     )}
                                 </div>
 
@@ -436,7 +440,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                     <h3 className="font-medium text-white">
                                         {selectedTemplate.name}
                                     </h3>
-                                    <p className="text-sm text-[#8B949E]">
+                                    <p className="text-sm text-muted-foreground">
                                         {selectedTemplate.category}
                                     </p>
                                 </div>
@@ -446,27 +450,27 @@ export function AddSubscriptionModal({ templates }: Props) {
                                 <h3 className="text-sm font-medium text-white">
                                     Choose your plan
                                 </h3>
-                                <p className="mt-1 text-sm text-[#8B949E]">
+                                <p className="mt-1 text-sm text-muted-foreground">
                                     Select the plan you use. You can edit amount and billing cycle
                                     later.
                                 </p>
                             </div>
 
                             {selectedTemplate.plans.length > 0 ? (
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="grid gap-2 sm:grid-cols-2">
                                     {selectedTemplate.plans.map((plan) => (
                                         <button
                                             key={plan.id}
                                             type="button"
                                             onClick={() => choosePlan(plan)}
-                                            className="rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] p-4 text-left transition hover:border-[#58A6FF] hover:bg-[#1b222c]"
+                                            className="cursor-pointer rounded-lg border border-border/70 bg-muted/40 p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
                                                     <h4 className="font-medium text-white">
                                                         {plan.name}
                                                     </h4>
-                                                    <p className="mt-1 text-sm text-[#8B949E]">
+                                                    <p className="mt-1 text-sm text-muted-foreground">
                                                         {formatBillingCycle(plan.billingCycle)}
                                                     </p>
                                                 </div>
@@ -479,15 +483,15 @@ export function AddSubscriptionModal({ templates }: Props) {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="rounded-xl border border-dashed border-[#3D444D] p-8 text-center">
-                                    <p className="text-sm text-[#8B949E]">
+                                <div className="rounded-lg border border-dashed border-border/70 px-4 py-6 text-center">
+                                    <p className="text-sm text-muted-foreground">
                                         No plans found for this template.
                                     </p>
 
                                     <button
                                         type="button"
                                         onClick={continueTemplateWithoutPlan}
-                                        className="mt-4 rounded-lg border border-[#2f8132] bg-[#238636] px-4 py-2 text-sm text-white transition hover:bg-[#2ea043]"
+                                        className="mt-4 inline-flex h-10 cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                                     >
                                         Continue manually
                                     </button>
@@ -502,25 +506,25 @@ export function AddSubscriptionModal({ templates }: Props) {
                             <button
                                 type="button"
                                 onClick={goBackFromForm}
-                                className="inline-flex items-center gap-2 text-sm text-[#8B949E] transition hover:text-white"
+                                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-white"
                             >
                                 <ChevronLeft size={16} />
                                 {selectedTemplate ? "Back to plans" : "Back to templates"}
                             </button>
 
                             {selectedTemplate && (
-                                <div className="flex items-center gap-3 rounded-xl border border-[#3D444D] bg-[#151B23] p-3">
-                                    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-[#3D444D] bg-[#010409]">
+                                <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-3 ring-1 ring-border/60">
+                                    <div className="flex size-9 items-center justify-center overflow-hidden rounded-lg bg-white/90 ring-1 ring-black/10">
                                         {selectedTemplate.logo ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                                 src={selectedTemplate.logo}
                                                 alt={selectedTemplate.name}
                                                 loading="lazy"
-                                                className="h-7 w-7 object-contain"
+                                                className="h-7 w-7 object-contain drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
                                             />
                                         ) : (
-                                            <CreditCard size={20} className="text-[#8B949E]" />
+                                            <CreditCard size={20} className="text-muted-foreground" />
                                         )}
                                     </div>
 
@@ -528,7 +532,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                         <h3 className="font-medium text-white">
                                             {selectedTemplate.name}
                                         </h3>
-                                        <p className="text-sm text-[#8B949E]">
+                                        <p className="text-sm text-muted-foreground">
                                             {selectedTemplate.category}
                                         </p>
                                     </div>
@@ -544,24 +548,24 @@ export function AddSubscriptionModal({ templates }: Props) {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {/* Name */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-[#C9D1D9]">
+                                    <label className="text-xs font-medium text-muted-foreground">
                                         Subscription Name
                                     </label>
                                     <input
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="Netflix"
-                                        className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                                        className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                     />
                                 </div>
 
                                 {/* Category */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-[#C9D1D9]">Category</label>
-                                    <select
+                                    <label className="text-xs font-medium text-muted-foreground">Category</label>
+                                    <StyledSelect
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
-                                        className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                                        className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                     >
                                         <option value="">Select category</option>
                                         {categories.map((item) => (
@@ -569,89 +573,89 @@ export function AddSubscriptionModal({ templates }: Props) {
                                                 {item}
                                             </option>
                                         ))}
-                                    </select>
+                                    </StyledSelect>
                                 </div>
 
                                 {/* Plan */}
                                 {selectedTemplate ? (
                                     <div className="space-y-2">
-                                        <label className="text-sm text-[#C9D1D9]">
+                                        <label className="text-xs font-medium text-muted-foreground">
                                             Selected Plan
                                         </label>
-                                        <div className="flex h-11 items-center rounded-lg border border-[#3D444D] bg-[#151B23] px-3 text-sm text-white">
+                                        <div className="flex h-10 items-center rounded-lg bg-muted/50 px-3 text-sm text-foreground ring-1 ring-border/60">
                                             {planName || "No plan selected"}
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <label className="text-sm text-[#C9D1D9]">
+                                        <label className="text-xs font-medium text-muted-foreground">
                                             Plan Name{" "}
-                                            <span className="text-[#6E7681]">(optional)</span>
+                                            <span className="text-muted-foreground/70">(optional)</span>
                                         </label>
                                         <input
                                             value={planName}
                                             onChange={(e) => setPlanName(e.target.value)}
                                             placeholder="Premium / Basic / Pro"
-                                            className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                                            className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                         />
                                     </div>
                                 )}
 
                                 {/* Amount */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-[#C9D1D9]">Amount</label>
+                                    <label className="text-xs font-medium text-muted-foreground">Amount</label>
                                     <input
                                         type="number"
                                         value={amount}
                                         min={1}
                                         onChange={(e) => setAmount(e.target.value)}
                                         placeholder="499"
-                                        className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none placeholder:text-[#6E7681] focus:border-[#58A6FF]"
+                                        className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                     />
                                 </div>
 
                                 {/* Billing Cycle */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-[#C9D1D9]">
+                                    <label className="text-xs font-medium text-muted-foreground">
                                         Billing Cycle
                                     </label>
-                                    <select
+                                    <StyledSelect
                                         value={billingCycle}
                                         onChange={(e) =>
                                             setBillingCycle(e.target.value as BillingCycle)
                                         }
-                                        className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                                        className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                     >
                                         {billingCycles.map((cycle) => (
                                             <option key={cycle} value={cycle}>
                                                 {formatBillingCycle(cycle)}
                                             </option>
                                         ))}
-                                    </select>
+                                    </StyledSelect>
                                 </div>
 
                                 {/* Next Renewal Date */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-[#C9D1D9]">Next Renewal Date</label>
+                                    <label className="text-xs font-medium text-muted-foreground">Next Renewal Date</label>
 
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <button
                                                 type="button"
                                                 className={cn(
-                                                    "flex h-11 w-full items-center justify-between rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white transition hover:border-[#4B5563]",
-                                                    !nextRenewalDate && "text-[#6E7681]"
+                                                    "flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/15",
+                                                    !nextRenewalDate && "text-muted-foreground/70"
                                                 )}
                                             >
                                                 {nextRenewalDate ? format(nextRenewalDate, "PPP") : "Pick renewal date"}
 
-                                                <CalendarIcon size={18} className="text-[#8B949E]" />
+                                                <CalendarIcon size={18} className="text-muted-foreground" />
                                             </button>
                                         </PopoverTrigger>
 
                                         <PopoverContent
                                             align="start"
-                                            className="w-auto rounded-xl border border-[#3D444D] bg-[#0D1117] p-3 text-white shadow-2xl"
+                                            className="w-auto rounded-xl border border-border bg-card p-3 text-white shadow-2xl"
                                         >
                                             <Calendar
                                                 mode="single"
@@ -678,24 +682,24 @@ export function AddSubscriptionModal({ templates }: Props) {
 
                                                     dropdowns: "flex items-center justify-center gap-2",
                                                     dropdown:
-                                                        "rounded-md border border-[#3D444D] bg-[#010409] px-2 py-1 text-sm text-white outline-none hover:bg-[#151B23]",
+                                                        "rounded-md border border-border bg-background px-2 py-1 text-sm text-white outline-none hover:bg-muted",
 
                                                     button_previous:
-                                                        "absolute left-2 top-1 h-7 w-7 rounded-md text-[#8B949E] hover:bg-[#151B23] hover:text-white",
+                                                        "absolute left-2 top-1 h-7 w-7 rounded-md text-muted-foreground hover:bg-muted hover:text-white",
                                                     button_next:
-                                                        "absolute right-2 top-1 h-7 w-7 rounded-md text-[#8B949E] hover:bg-[#151B23] hover:text-white",
+                                                        "absolute right-2 top-1 h-7 w-7 rounded-md text-muted-foreground hover:bg-muted hover:text-white",
 
                                                     weekdays: "mt-4 flex",
                                                     weekday:
-                                                        "w-9 text-center text-[0.8rem] font-normal text-[#8B949E]",
+                                                        "w-9 text-center text-[0.8rem] font-normal text-muted-foreground",
 
                                                     week: "mt-2 flex w-full",
-                                                    day: "h-9 w-9 p-0 text-center text-sm text-[#C9D1D9]",
+                                                    day: "h-9 w-9 p-0 text-center text-sm text-foreground",
                                                     day_button:
-                                                        "h-9 w-9 rounded-md text-[#C9D1D9] transition hover:bg-[#151B23] hover:text-white",
+                                                        "h-9 w-9 rounded-md text-foreground transition hover:bg-muted hover:text-white",
 
-                                                    today: "rounded-md border border-[#58A6FF] text-white",
-                                                    selected: "rounded-md bg-[#238636] text-white hover:bg-[#2ea043]",
+                                                    today: "rounded-md ring-1 ring-primary/50 text-foreground",
+                                                    selected: "rounded-md bg-primary text-white hover:bg-primary",
                                                     outside: "text-[#484F58] opacity-60",
                                                     disabled: "text-[#484F58] opacity-50",
                                                     hidden: "invisible",
@@ -707,24 +711,24 @@ export function AddSubscriptionModal({ templates }: Props) {
 
                                 {/* Status */}
                                 <div className="space-y-2">
-                                    <label className="text-sm text-[#C9D1D9]">Status</label>
-                                    <select
+                                    <label className="text-xs font-medium text-muted-foreground">Status</label>
+                                    <StyledSelect
                                         value={isActive ? "ACTIVE" : "INACTIVE"}
                                         onChange={(e) => setIsActive(e.target.value === "ACTIVE")}
-                                        className="h-11 w-full rounded-lg border border-[#3D444D] bg-[#010409] px-3 text-sm text-white outline-none focus:border-[#58A6FF]"
+                                        className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                                     >
                                         <option value="ACTIVE">Active</option>
                                         <option value="INACTIVE">Inactive</option>
-                                    </select>
+                                    </StyledSelect>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col-reverse gap-3 border-t border-[#3D444D] pt-5 sm:flex-row sm:justify-end">
+                            <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-5 flex flex-col-reverse gap-2 border-t border-border/70 bg-card/95 px-4 py-4 sm:-mx-5 sm:-mb-5 sm:flex-row sm:justify-end sm:px-5">
                                 <button
                                     type="button"
                                     onClick={closeModal}
                                     disabled={saving}
-                                    className="cursor-pointer inline-flex h-11 items-center justify-center rounded-lg border border-[#3D444D] bg-[#151B23] px-4 text-sm text-[#C9D1D9] transition hover:bg-[#1f2630] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     Cancel
                                 </button>
@@ -732,7 +736,7 @@ export function AddSubscriptionModal({ templates }: Props) {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[#2f8132] bg-[#238636] px-4 text-sm font-medium text-white transition hover:bg-[#2ea043] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {saving ? (
                                         <>
@@ -750,8 +754,8 @@ export function AddSubscriptionModal({ templates }: Props) {
                         </form>
                     )}
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }
 

@@ -45,18 +45,18 @@ export default function DeleteAccountDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-[#3D444D] bg-[#0D1117] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#3D444D] bg-[#151B23] px-5 py-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="delete-account-title" className="w-full max-w-lg overflow-hidden rounded-xl border border-border/70 bg-card shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border bg-muted px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/10">
               <AlertTriangle className="h-5 w-5 text-red-400" />
             </div>
 
             <div>
-              <h2 className="text-sm font-semibold text-white">
+              <h2 id="delete-account-title" className="text-sm font-semibold text-white">
                 Delete account
               </h2>
-              <p className="text-xs text-[#8B949E]">
+              <p className="text-xs text-muted-foreground">
                 This action is permanent
               </p>
             </div>
@@ -64,11 +64,12 @@ export default function DeleteAccountDialog({
 
           <button
             type="button"
+            aria-label="Close delete account dialog"
             disabled={isPending}
             onClick={handleClose}
-            className="rounded-lg p-1.5 text-[#8B949E] transition hover:bg-[#0D1117] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-card hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <X className="h-4 w-4" />
+            <X aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
 
@@ -77,7 +78,7 @@ export default function DeleteAccountDialog({
             <p className="text-sm font-semibold text-red-400">
               You are about to delete your LedgerOS account.
             </p>
-            <p className="mt-2 text-xs leading-5 text-[#C9D1D9]">
+            <p className="mt-2 text-xs leading-5 text-foreground">
               All expenses, subscriptions, recurring expenses, budgets, and
               account data will be permanently removed. This cannot be undone.
             </p>
@@ -86,7 +87,7 @@ export default function DeleteAccountDialog({
           <div>
             <label
               htmlFor="delete-confirmation"
-              className="mb-2 block text-sm font-medium text-[#C9D1D9]"
+              className="mb-2 block text-sm font-medium text-foreground"
             >
               Type <span className="font-semibold text-red-400">DELETE</span>{" "}
               to confirm
@@ -99,16 +100,16 @@ export default function DeleteAccountDialog({
               disabled={isPending}
               onChange={(event) => setConfirmationText(event.target.value)}
               placeholder="DELETE"
-              className="h-10 w-full rounded-lg border border-[#3D444D] bg-[#151B23] px-3 text-sm text-white outline-none transition placeholder:text-[#8B949E] focus:border-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 w-full rounded-lg border border-border bg-muted px-3 text-sm text-white outline-none transition placeholder:text-muted-foreground focus:border-red-500 focus:ring-2 focus:ring-red-500/15 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-[#3D444D] pt-4 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               disabled={isPending}
               onClick={handleClose}
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-[#3D444D] bg-[#151B23] px-4 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#1f2630] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-foreground transition hover:bg-[#1f2630] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>

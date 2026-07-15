@@ -135,20 +135,24 @@ export default function AddExpenseModal() {
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="border-[#3D444D] bg-[#0D1117] text-white sm:max-w-lg">
-                <DialogHeader className="flex flex-row items-center justify-between">
-                    <DialogTitle className="text-lg font-semibold">
+            <DialogContent className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto border-border/70 bg-card p-0 text-foreground shadow-2xl sm:max-w-lg">
+                <DialogHeader className="sticky top-0 z-10 border-b border-border/70 bg-card px-5 py-4 pr-12 sm:px-6">
+                    <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
                         {mode === "edit" ? "Edit Expense" : "Add Expense"}
                     </DialogTitle>
                 </DialogHeader>
 
-                {error ? <p className="text-red-500">{error}</p> : null}
+                {error ? (
+                    <p className="mx-5 mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400 ring-1 ring-red-500/20 sm:mx-6">
+                        {error}
+                    </p>
+                ) : null}
 
-                <div className="mt-4 space-y-5">
+                <div className="space-y-4 px-5 py-5 sm:px-6">
 
                     {/* Expense Name */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-white">
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                             Expense Name
                         </label>
 
@@ -157,13 +161,13 @@ export default function AddExpenseModal() {
                             value={data.name}
                             placeholder="e.g. Swiggy Order"
                             onChange={(e) => setData((prev) => ({ ...prev, name: e.target.value }))}
-                            className="w-full rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636]"
+                            className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                         />
                     </div>
 
                     {/* Amount */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-white">
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                             Amount
                         </label>
 
@@ -175,17 +179,17 @@ export default function AddExpenseModal() {
                             onChange={(e) =>
                                 setData((prev) => ({ ...prev, amount: Number(e.target.value) }))
                             }
-                            className="w-full rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            className="h-10 w-full rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                     </div>
 
                     {/* Categories */}
                     <div>
-                        <label className="mb-3 block text-sm font-medium text-white">
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                             Category
                         </label>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2">
                             {categories.map((category) => {
                                 const Icon = category.icon;
 
@@ -196,9 +200,9 @@ export default function AddExpenseModal() {
                                         key={category.label}
                                         type="button"
                                         onClick={() => setSelectedCategory(category.value as ExpenseCategory)}
-                                        className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition cursor-pointer ${active
-                                            ? "border-[#238636] bg-[#238636]/10 text-white"
-                                            : "border-[#3D444D] bg-[#151B23] text-[#8B949E] hover:border-[#4B5563] hover:bg-[#1a212b] hover:text-white"
+                                        className={`flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${active
+                                            ? "border-primary/60 bg-primary/10 text-foreground"
+                                            : "border-border/70 bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
                                             }`}
                                     >
                                         <Icon size={18} />
@@ -211,7 +215,7 @@ export default function AddExpenseModal() {
 
                     {/* Date */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-white">
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                             Date
                         </label>
 
@@ -219,19 +223,19 @@ export default function AddExpenseModal() {
                             <PopoverTrigger asChild>
                                 <button
                                     className={cn(
-                                        "flex h-12 w-full items-center justify-between cursor-pointer rounded-xl border border-[#3D444D] bg-[#010409] px-4 text-sm text-white transition hover:border-[#4B5563]",
-                                        !date && "text-[#6E7681]"
+                                        "flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors hover:border-border focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/15",
+                                        !date && "text-muted-foreground/70"
                                     )}
                                 >
                                     {date ? format(date, "PPP") : "Pick a date"}
 
-                                    <CalendarIcon size={18} className="text-[#8B949E]" />
+                                    <CalendarIcon size={18} className="text-muted-foreground" />
                                 </button>
                             </PopoverTrigger>
 
                             <PopoverContent
                                 align="start"
-                                className="w-auto rounded-xl border border-[#3D444D] bg-[#0D1117] p-3 text-white shadow-2xl"
+                                className="w-auto rounded-xl border border-border bg-card p-3 text-white shadow-2xl"
                             >
                                 <Calendar
                                     mode="single"
@@ -242,24 +246,24 @@ export default function AddExpenseModal() {
                                         caption_label: "text-sm font-medium text-white",
 
                                         button_previous:
-                                            "absolute left-2 top-3 h-7 w-7 rounded-md text-[#8B949E] hover:bg-[#151B23] hover:text-white",
+                                            "absolute left-2 top-3 h-7 w-7 rounded-md text-muted-foreground hover:bg-muted hover:text-white",
                                         button_next:
-                                            "absolute right-2 top-3 h-7 w-7 rounded-md text-[#8B949E] hover:bg-[#151B23] hover:text-white",
+                                            "absolute right-2 top-3 h-7 w-7 rounded-md text-muted-foreground hover:bg-muted hover:text-white",
 
                                         weekdays: "mt-4 flex",
                                         weekday:
-                                            "w-9 text-center text-[0.8rem] font-normal text-[#8B949E]",
+                                            "w-9 text-center text-[0.8rem] font-normal text-muted-foreground",
 
                                         week: "mt-2 flex w-full",
-                                        day: "h-9 w-9 p-0 text-center text-sm text-[#C9D1D9]",
+                                        day: "h-9 w-9 p-0 text-center text-sm text-foreground",
                                         day_button:
-                                            "h-9 w-9 rounded-md text-[#C9D1D9] transition hover:bg-[#151B23] hover:text-white",
+                                            "h-9 w-9 rounded-md text-foreground transition hover:bg-muted hover:text-white",
 
                                         today:
-                                            "rounded-md border border-[#58A6FF] text-white",
+                                            "rounded-md ring-1 ring-primary/50 text-foreground",
 
                                         selected:
-                                            "rounded-md bg-[#238636] text-white hover:bg-[#2ea043]",
+                                            "rounded-md bg-primary text-white hover:bg-primary",
 
                                         outside: "text-[#484F58] opacity-60",
                                         disabled: "text-[#484F58] opacity-50",
@@ -276,16 +280,16 @@ export default function AddExpenseModal() {
                         value={data.note}
                         placeholder="Add a note..."
                         onChange={(e) => setData((prev) => ({ ...prev, note: e.target.value }))}
-                        className="w-full resize-none rounded-xl border border-[#3D444D] bg-[#010409] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#6E7681] focus:border-[#238636]"
+                        className="min-h-24 w-full resize-none rounded-lg border border-border/80 bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
                     />
 
                     {/* Buttons */}
-                    <div className="flex gap-3 pt-2">
+                    <div className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-5 flex flex-col-reverse gap-2 border-t border-border/70 bg-card/95 px-5 py-4 sm:-mx-6 sm:flex-row sm:justify-end sm:px-6">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={loading}
-                            className="flex-1 rounded-xl cursor-pointer border border-[#3D444D] bg-[#151B23] px-4 py-3 text-sm font-medium text-[#C9D1D9] transition hover:bg-[#1f2630]"
+                            className="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             Cancel
                         </button>
@@ -294,7 +298,7 @@ export default function AddExpenseModal() {
                             type="button"
                             disabled={loading}
                             onClick={(e) => handelsubmit(e)}
-                            className="flex-1 rounded-xl cursor-pointer bg-[#2ea043] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#238636] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {loading ? (
                                 <div className="flex items-center justify-center gap-2">

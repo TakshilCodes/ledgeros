@@ -1,29 +1,38 @@
 "use client";
 
-import type { ElementType } from "react";
 import {
   AlertTriangle,
-  BarChart3,
   CalendarClock,
   Car,
   CreditCard,
   Flame,
   PiggyBank,
   ReceiptText,
-  TrendingUp,
   Utensils,
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
-import { SpendingBarChart, SpendingDonutChart } from "./dashboard-charts";
+import { FinancialSummary } from "./financial-summary";
+import { SpendingDonutChart } from "./dashboard-charts";
+import { Panel } from "@/components/ui/foundation";
 import type { DashboardData } from "@/types/dashboard";
 
 type Props = {
   data: DashboardData;
   selectedRange: string;
 };
+
+const categoryColors = [
+  "#58A6FF",
+  "#3FB950",
+  "#F85149",
+  "#D29922",
+  "#A371F7",
+  "#DB61A2",
+  "#56D4DD",
+];
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -43,13 +52,11 @@ function formatTime(date: string) {
 function getExpenseIcon(category: string) {
   if (category === "FOOD") return Utensils;
   if (category === "TRAVEL") return Car;
-
   return ReceiptText;
 }
 
 function getRangeLabel(range: string) {
-  if (range === "last-month") return "Last month";
-  return "This month";
+  return range === "last-month" ? "Last month" : "This month";
 }
 
 function EmptyBlock({
@@ -60,81 +67,28 @@ function EmptyBlock({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[#3D444D] bg-[#0D1117] p-5 text-center">
-      <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="mt-1 text-xs leading-5 text-[#8B949E]">{description}</p>
+    <div className="py-8 text-center">
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>
     </div>
-  );
-}
-
-function SectionCard({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`w-full min-w-0 overflow-hidden rounded-2xl border border-[#3D444D] bg-[#0D1117] ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function SummaryCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  isDanger,
-}: {
-  title: string;
-  value: string;
-  subtitle: string;
-  icon: ElementType;
-  isDanger?: boolean;
-}) {
-  return (
-    <SectionCard className="h-full p-4">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#151B23] text-[#58A6FF]">
-            <Icon size={15} />
-          </div>
-
-          <p className="mt-5 truncate text-[11px] font-semibold uppercase tracking-wide text-[#C9D1D9]">
-            {title}
-          </p>
-
-          <h3
-            className={`mt-2 truncate text-2xl font-bold leading-none tracking-tight ${isDanger ? "text-red-400" : "text-white"
-              }`}
-          >
-            {value}
-          </h3>
-
-          <p className="mt-3 line-clamp-1 text-xs font-normal leading-4 text-[#8B949E]">
-            {subtitle}
-          </p>
-        </div>
-
-        <TrendingUp size={14} className="mt-1 shrink-0 text-[#3FB950]" />
-      </div>
-    </SectionCard>
   );
 }
 
 function ProgressBar({
   value,
-  color = "bg-[#58A6FF]",
+  color = "bg-blue-500",
 }: {
   value: number;
   color?: string;
 }) {
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-[#21262D]">
+    <div
+      className="h-1.5 overflow-hidden rounded-full bg-accent"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.min(Math.round(value), 100)}
+    >
       <div
         className={`h-full rounded-full ${color}`}
         style={{ width: `${Math.min(value, 100)}%` }}
@@ -149,483 +103,489 @@ export default function DashboardClient({ data, selectedRange }: Props) {
 
   if (!data) {
     return (
-      <div className="w-full min-w-0">
-        <EmptyBlock
-          title="Unable to load dashboard"
-          description="Something went wrong while loading your dashboard."
-        />
-      </div>
+      <EmptyBlock
+        title="Unable to load dashboard"
+        description="Something went wrong while loading your dashboard."
+      />
     );
   }
 
-  const dashboardData = data;
+  const hasMonthlyBudget = data.meta.hasMonthlyBudget;
+  const monthSpend = data.summaryCards.thisMonthSpend.value;
+  const budgetDifference = data.summaryCards.budgetLeft.value;
+  const budgetAmount = hasMonthlyBudget
+    ? data.summaryCards.budgetLeft.isOverBudget
+      ? monthSpend - budgetDifference
+      : monthSpend + budgetDifference
+    : 0;
+  const budgetRemaining = Math.max(budgetAmount - monthSpend, 0);
+  const budgetUsedPercentage =
+    budgetAmount > 0 ? Math.round((monthSpend / budgetAmount) * 100) : 0;
+  const budgetTone =
+    data.summaryCards.budgetLeft.isOverBudget || budgetUsedPercentage > 90
+      ? "danger"
+      : budgetUsedPercentage >= 70
+        ? "warning"
+        : "success";
+  const budgetProgressColor =
+    budgetTone === "danger"
+      ? "bg-red-500"
+      : budgetTone === "warning"
+        ? "bg-amber-500"
+        : "bg-green-500";
 
-  const summaryCards = [
+  const topCategory = data.expenseOverview.categoryBreakdown[0] ?? null;
+
+  const summaryItems = [
     {
-      title: dashboardData.summaryCards.todaySpend.title,
-      value: dashboardData.summaryCards.todaySpend.formattedValue,
-      subtitle: dashboardData.summaryCards.todaySpend.subtitle,
+      label: data.summaryCards.todaySpend.title,
+      value: data.summaryCards.todaySpend.formattedValue,
+      supportingText: data.summaryCards.todaySpend.subtitle,
       icon: ReceiptText,
     },
     {
-      title: dashboardData.summaryCards.thisMonthSpend.title,
-      value: dashboardData.summaryCards.thisMonthSpend.formattedValue,
-      subtitle: dashboardData.summaryCards.thisMonthSpend.subtitle,
+      label: data.summaryCards.thisMonthSpend.title,
+      value: data.summaryCards.thisMonthSpend.formattedValue,
+      supportingText: data.summaryCards.thisMonthSpend.subtitle,
       icon: Wallet,
     },
     {
-      title: dashboardData.summaryCards.subscriptionsTotal.title,
-      value: dashboardData.summaryCards.subscriptionsTotal.formattedValue,
-      subtitle: dashboardData.summaryCards.subscriptionsTotal.subtitle,
+      label: data.summaryCards.subscriptionsTotal.title,
+      value: data.summaryCards.subscriptionsTotal.formattedValue,
+      supportingText: data.summaryCards.subscriptionsTotal.subtitle,
       icon: CreditCard,
     },
     {
-      title: dashboardData.summaryCards.budgetLeft.title,
-      value: dashboardData.summaryCards.budgetLeft.formattedValue,
-      subtitle: dashboardData.summaryCards.budgetLeft.subtitle,
+      label: hasMonthlyBudget
+        ? data.summaryCards.budgetLeft.isOverBudget
+          ? "Over budget"
+          : "Budget remaining"
+        : "Monthly budget",
+      value: hasMonthlyBudget
+        ? data.summaryCards.budgetLeft.formattedValue
+        : "No budget set",
+      supportingText: hasMonthlyBudget
+        ? data.summaryCards.budgetLeft.subtitle
+        : "Set a monthly spending limit",
       icon: PiggyBank,
-      isDanger: dashboardData.summaryCards.budgetLeft.isOverBudget,
+      tone: hasMonthlyBudget && data.summaryCards.budgetLeft.isOverBudget
+        ? ("danger" as const)
+        : ("default" as const),
     },
   ];
 
   return (
-    <div className="w-full min-w-0 overflow-x-hidden pb-4">
-      <div className="w-full max-w-none space-y-4 overflow-x-hidden sm:space-y-5 xl:mx-auto xl:max-w-350">
-        {/* App-style welcome header */}
-        <section className="w-full min-w-0">
-          <div className="flex min-w-0 items-start justify-between gap-3">
-            <div className="min-w-0">
+    <div className="-mt-1 w-full min-w-0 space-y-4 pb-5">
+      <section className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold leading-tight tracking-tight text-foreground md:text-2xl">
+            Welcome back, {userName}
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Here&apos;s your financial overview.
+          </p>
+        </div>
 
-              <h1 className="mt-2 text-xl font-bold leading-tight tracking-tight text-white md:text-2xl">
-                Welcome back, {userName} 👋
-              </h1>
+        <span className="inline-flex w-fit shrink-0 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
+          {getRangeLabel(selectedRange)}
+        </span>
+      </section>
 
-              <p className="mt-2 text-sm font-normal leading-5 text-[#8B949E]">
-                Here&apos;s your financial overview.
-              </p>
-            </div>
+      <FinancialSummary items={summaryItems} />
 
-            <span className="hidden shrink-0 rounded-full border border-[#3D444D] bg-[#151B23] px-3 py-1.5 text-xs font-medium text-[#C9D1D9] sm:inline-flex">
-              {getRangeLabel(selectedRange)}
-            </span>
-          </div>
+      {data.alert ? (
+        <section
+          role={data.alert.type === "danger" || data.alert.type === "warning" ? "alert" : "status"}
+          className={`flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-xs leading-5 ${
+            data.alert.type === "danger"
+              ? "border-red-500/15 bg-red-500/[0.06] text-red-300"
+              : data.alert.type === "warning"
+                ? "border-amber-500/15 bg-amber-500/[0.06] text-amber-200"
+                : "border-blue-500/15 bg-blue-500/[0.05] text-muted-foreground"
+          }`}
+        >
+          <AlertTriangle
+            className={`size-3.5 shrink-0 ${
+              data.alert.type === "danger"
+                ? "text-red-400"
+                : data.alert.type === "warning"
+                  ? "text-amber-300"
+                  : "text-blue-400"
+            }`}
+            aria-hidden="true"
+          />
+          <p className="min-w-0">
+            {data.alert.type === "info" && topCategory
+              ? `${topCategory.label} is your highest category at ${formatCurrency(
+                  topCategory.amount
+                )} - ${topCategory.percentage}% of this month's spending.`
+              : data.alert.message}
+          </p>
         </section>
+      ) : null}
 
-        {/* Summary cards - no horizontal scroll */}
-        <section className="relative w-full min-w-0">
-          {/* Right gradient hint on mobile */}
-          <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-12 bg-linear-to-l from-[#010409] to-transparent sm:hidden" />
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Panel className="min-w-0 p-0">
+          <div className="border-b border-border/70 px-4 py-3 sm:px-5">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">
+              Spending Overview
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {getRangeLabel(selectedRange)} category distribution
+            </p>
+          </div>
 
-          <div className="scrollbar-hide flex w-full gap-3 overflow-x-auto scroll-smooth pb-1 pr-10 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pr-0 xl:grid-cols-4">
-            {summaryCards.map((card) => (
-              <div key={card.title} className="w-[82%] shrink-0 sm:w-full sm:shrink">
-                <SummaryCard {...card} />
+          {data.expenseOverview.categoryBreakdown.length > 0 ? (
+            <div className="grid min-w-0 items-center gap-2 p-3 sm:p-4 lg:grid-cols-[minmax(280px,1fr)_minmax(260px,0.8fr)]">
+              <div className="flex min-h-56 min-w-0 items-center justify-center">
+                <div className="w-full max-w-md">
+                  <SpendingDonutChart
+                    categories={data.expenseOverview.categoryBreakdown}
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* Alert */}
-        {dashboardData.alert ? (
-          <section
-            className={`w-full min-w-0 rounded-2xl border px-4 py-3 text-sm ${dashboardData.alert.type === "danger"
-              ? "border-red-500/30 bg-red-500/10 text-red-400"
-              : dashboardData.alert.type === "warning"
-                ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
-                : "border-[#58A6FF]/30 bg-[#58A6FF]/10 text-[#58A6FF]"
-              }`}
-          >
-            <div className="flex min-w-0 items-start gap-3">
-              <AlertTriangle size={17} className="mt-0.5 shrink-0" />
-              <p className="min-w-0 text-sm font-medium leading-6">
-                {dashboardData.alert.message}
-              </p>
-            </div>
-          </section>
-        ) : null}
-
-        {/* Main app content */}
-        <section className="grid w-full min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="min-w-0 space-y-4">
-            {/* Charts */}
-            <div className="grid w-full min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
-              <SectionCard className="p-4">
-                <div className="mb-4">
-                  <h2 className="text-sm font-semibold text-white">
-                    Category Split
-                  </h2>
-                  <p className="mt-1 text-xs text-[#8B949E]">
-                    Where your money went
+              <div className="min-w-0 lg:border-l lg:border-border/70 lg:pl-4">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Categories
+                  </p>
+                  <p className="text-sm font-semibold text-foreground tabular-nums">
+                    {formatCurrency(data.expenseOverview.totalSpent)}
                   </p>
                 </div>
 
-                <div className="min-w-0 overflow-hidden">
-                  {dashboardData.expenseOverview.categoryBreakdown.length > 0 ? (
-                    <div className="mx-auto w-full max-w-[320px] sm:max-w-105">
-                      <SpendingDonutChart
-                        categories={
-                          dashboardData.expenseOverview.categoryBreakdown
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-56 items-center justify-center text-xs text-[#8B949E]">
-                      No category data yet
-                    </div>
-                  )}
-                </div>
-              </SectionCard>
-
-              <SectionCard className="p-4">
-                <div className="mb-4">
-                  <h2 className="text-sm font-semibold text-white">
-                    Spending Chart
-                  </h2>
-                  <p className="mt-1 text-xs text-[#8B949E]">
-                    Category-wise spending
-                  </p>
-                </div>
-
-                <div className="min-w-0 overflow-hidden">
-                  {dashboardData.expenseOverview.categoryBreakdown.length > 0 ? (
-                    <div className="w-full min-w-0">
-                      <SpendingBarChart
-                        categories={
-                          dashboardData.expenseOverview.categoryBreakdown
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-56 items-center justify-center text-xs text-[#8B949E]">
-                      No spending data yet
-                    </div>
-                  )}
-                </div>
-              </SectionCard>
-            </div>
-
-            {/* Recent lists */}
-            <div className="grid w-full min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
-              <SectionCard className="p-4">
-                <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="truncate text-sm font-semibold text-white">
-                      Recent Expenses
-                    </h2>
-                    <p className="mt-1 text-xs text-[#8B949E]">
-                      Latest spending activity
-                    </p>
-                  </div>
-
-                  <Link
-                    href="/dashboard/expenses"
-                    className="shrink-0 text-xs font-medium text-[#58A6FF]"
-                  >
-                    View All
-                  </Link>
-                </div>
-
-                <div className="space-y-2">
-                  {dashboardData.recentExpenses.length > 0 ? (
-                    dashboardData.recentExpenses.slice(0, 4).map((expense) => {
-                      const Icon = getExpenseIcon(expense.category);
-
-                      return (
-                        <div
-                          key={expense.id}
-                          className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-[#010409] px-3 py-3"
-                        >
-                          <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#151B23] text-[#58A6FF]">
-                              <Icon size={17} />
-                            </div>
-
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-white">
-                                {expense.name}
-                              </p>
-                              <p className="mt-0.5 truncate text-xs text-[#8B949E]">
-                                {expense.label}
-                              </p>
-                            </div>
+                <div className="divide-y divide-border/60">
+                  {data.expenseOverview.categoryBreakdown
+                    .slice(0, 6)
+                    .map((category, index) => (
+                      <div key={category.category} className="py-2 first:pt-0">
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="size-2 shrink-0 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  categoryColors[index % categoryColors.length],
+                              }}
+                            />
+                            <p className="truncate text-sm text-foreground">
+                              {category.label}
+                            </p>
                           </div>
-
                           <div className="shrink-0 text-right">
-                            <p className="text-sm font-semibold text-white">
-                              {expense.formattedAmount}
+                            <p className="text-sm font-medium text-foreground tabular-nums">
+                              {formatCurrency(category.amount)}
                             </p>
-                            <p className="mt-0.5 text-xs text-[#8B949E]">
-                              {formatTime(expense.spentAt)}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <EmptyBlock
-                      title="No recent expenses"
-                      description="Your latest expenses will appear here."
-                    />
-                  )}
-                </div>
-              </SectionCard>
-
-              <SectionCard className="p-4">
-                <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="truncate text-sm font-semibold text-white">
-                      Upcoming Renewals
-                    </h2>
-                    <p className="mt-1 text-xs text-[#8B949E]">
-                      Subscriptions renewing soon
-                    </p>
-                  </div>
-
-                  <Link
-                    href="/dashboard/subscriptions"
-                    className="shrink-0 text-xs font-medium text-[#58A6FF]"
-                  >
-                    View All
-                  </Link>
-                </div>
-
-                <div className="space-y-2">
-                  {dashboardData.upcomingRenewals.length > 0 ? (
-                    dashboardData.upcomingRenewals.slice(0, 4).map((renewal) => (
-                      <div
-                        key={renewal.id}
-                        className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-[#010409] px-3 py-3"
-                      >
-                        <div className="flex min-w-0 items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#112617] text-[#3FB950]">
-                            <CalendarClock size={17} />
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-white">
-                              {renewal.name}
-                            </p>
-                            <p className="mt-0.5 truncate text-xs text-[#8B949E]">
-                              {renewal.planName || renewal.billingCycle}
+                            <p className="text-[11px] text-muted-foreground">
+                              {category.percentage}%
                             </p>
                           </div>
                         </div>
-
-                        <div className="shrink-0 text-right">
-                          <p className="text-sm font-semibold text-white">
-                            {renewal.formattedAmount}
-                          </p>
-                          <p className="mt-0.5 text-xs font-medium text-yellow-400">
-                            {renewal.due}
-                          </p>
+                        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-accent">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${Math.min(category.percentage, 100)}%`,
+                              backgroundColor:
+                                categoryColors[index % categoryColors.length],
+                            }}
+                          />
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <EmptyBlock
-                      title="No upcoming renewals"
-                      description="Your active subscriptions will appear here."
-                    />
-                  )}
+                    ))}
                 </div>
-              </SectionCard>
+              </div>
             </div>
+          ) : (
+            <EmptyBlock
+              title="No spending data yet"
+              description="Category spending will appear here once expenses are added."
+            />
+          )}
+        </Panel>
+
+        <Panel className="min-w-0">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-foreground">
+                Budget Overview
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Monthly spending limit
+              </p>
+            </div>
+
+            {hasMonthlyBudget ? (
+              <span
+                className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${budgetTone === "danger"
+                  ? "bg-red-500/10 text-red-400"
+                  : budgetTone === "warning"
+                    ? "bg-amber-500/10 text-amber-300"
+                    : "bg-green-500/10 text-green-400"
+                  }`}
+              >
+                {data.summaryCards.budgetLeft.isOverBudget
+                  ? "Over budget"
+                  : budgetTone === "danger"
+                    ? "Near limit"
+                    : budgetTone === "warning"
+                      ? "Watch spending"
+                      : "On track"}
+              </span>
+            ) : null}
           </div>
 
-          {/* Right side / mobile stacked widgets */}
-          <aside className="min-w-0 space-y-4">
-            <SectionCard className="p-4">
-              <div className="mb-5 flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-sm font-semibold text-white sm:text-base">
-                    Budget Overview
-                  </h2>
-                  <p className="mt-1 text-xs leading-5 text-[#8B949E]">
-                    Monthly spending limit status
+          {hasMonthlyBudget ? (
+            <>
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2">
+                <div>
+                  <p className="text-xs text-muted-foreground">Spent</p>
+                  <p className="mt-1 text-lg font-semibold text-foreground tabular-nums">
+                    {formatCurrency(monthSpend)}
                   </p>
                 </div>
-
-                <span
-                  className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${dashboardData.summaryCards.budgetLeft.isOverBudget
-                    ? "border-red-500/30 bg-red-500/10 text-red-400"
-                    : "border-[#238636]/30 bg-[#238636]/10 text-[#3FB950]"
-                    }`}
-                >
-                  {dashboardData.summaryCards.budgetLeft.isOverBudget
-                    ? "Over"
-                    : "On Track"}
-                </span>
-              </div>
-
-              <div>
-                <div className="mb-2 flex min-w-0 items-center justify-between gap-3 text-sm">
-                  <span className="text-[#8B949E]">Budget Status</span>
-                  <span
-                    className={`truncate font-semibold ${dashboardData.summaryCards.budgetLeft.isOverBudget
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {data.summaryCards.budgetLeft.isOverBudget
+                      ? "Over by"
+                      : "Remaining"}
+                  </p>
+                  <p
+                    className={`mt-1 text-lg font-semibold tabular-nums ${data.summaryCards.budgetLeft.isOverBudget
                       ? "text-red-400"
-                      : "text-white"
+                      : "text-foreground"
                       }`}
                   >
-                    {dashboardData.summaryCards.budgetLeft.formattedValue}
+                    {data.summaryCards.budgetLeft.isOverBudget
+                      ? formatCurrency(budgetDifference)
+                      : formatCurrency(budgetRemaining)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                  <span className="text-muted-foreground">
+                    {budgetUsedPercentage}% used
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {formatCurrency(budgetAmount)}
                   </span>
                 </div>
-
                 <ProgressBar
-                  value={
-                    dashboardData.summaryCards.budgetLeft.isOverBudget ? 100 : 68
-                  }
-                  color={
-                    dashboardData.summaryCards.budgetLeft.isOverBudget
-                      ? "bg-red-500"
-                      : "bg-[#238636]"
-                  }
+                  value={budgetUsedPercentage}
+                  color={budgetProgressColor}
                 />
-
-                <p className="mt-3 text-xs leading-5 text-[#8B949E]">
-                  {dashboardData.summaryCards.budgetLeft.subtitle}
-                </p>
               </div>
-
-              <div className="mt-6">
-                <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-white">
-                    Category Budget
-                  </h3>
-
-                  <Link
-                    href="/dashboard/budgets"
-                    className="shrink-0 text-xs font-medium text-[#58A6FF]"
-                  >
-                    View
-                  </Link>
-                </div>
-
-                <div className="space-y-4">
-                  {dashboardData.categoryBudgets.length > 0 ? (
-                    dashboardData.categoryBudgets.map((budget) => (
-                      <div key={budget.id} className="min-w-0">
-                        <div className="mb-2 flex min-w-0 items-center justify-between gap-3">
-                          <p className="truncate text-xs font-semibold text-white">
-                            {budget.label}
-                          </p>
-                          <p className="shrink-0 text-xs text-[#8B949E]">
-                            {formatCurrency(budget.spent)} /{" "}
-                            {formatCurrency(budget.amount)}
-                          </p>
-                        </div>
-
-                        <ProgressBar
-                          value={budget.usedPercentage}
-                          color={
-                            budget.usedPercentage >= 100
-                              ? "bg-red-500"
-                              : budget.usedPercentage >= 80
-                                ? "bg-yellow-500"
-                                : "bg-[#58A6FF]"
-                          }
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    <EmptyBlock
-                      title="No category budgets"
-                      description="Create category budgets to track spending limits."
-                    />
-                  )}
-                </div>
-              </div>
-            </SectionCard>
-
-            <SectionCard className="p-4">
-              <div className="flex min-w-0 items-center gap-2">
-                <Flame size={18} className="shrink-0 text-orange-400" />
-                <h2 className="text-sm font-semibold text-white sm:text-base">
-                  No Spend Streak
-                </h2>
-              </div>
-
-              <p className="mt-4 text-3xl font-bold tracking-tight text-orange-400">
-                {dashboardData.noSpend.streak}{" "}
-                <span className="text-xl">
-                  {dashboardData.noSpend.streak === 1 ? "Day" : "Days"}
-                </span>
+            </>
+          ) : (
+            <div className="mt-5 py-3">
+              <p className="text-sm font-medium text-foreground">No budget set</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Create a monthly budget to track remaining spend and usage.
               </p>
+              <Link
+                href="/dashboard/budgets"
+                className="mt-3 inline-flex text-sm font-medium text-blue-400 hover:text-blue-300"
+              >
+                Create a budget
+              </Link>
+            </div>
+          )}
 
-              <p className="mt-1 text-sm leading-6 text-[#8B949E]">
-                {dashboardData.noSpend.streak > 0
-                  ? "Keep it up! You're on fire 🔥"
-                  : "Spend-free days will appear here."}
-              </p>
+          <div className="mt-4 border-t border-border/70 pt-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h3 className="text-sm font-medium text-foreground">
+                Category budgets
+              </h3>
+              <Link
+                href="/dashboard/budgets"
+                className="text-xs font-medium text-blue-400 hover:text-blue-300"
+              >
+                View all
+              </Link>
+            </div>
 
-              <div className="mt-4 grid grid-cols-7 gap-2">
-                {dashboardData.noSpend.days.map((day, index) => (
-                  <div key={`${day.label}-${index}`} className="text-center">
-                    <p className="mb-2 truncate text-[10px] text-[#8B949E]">
-                      {day.label}
-                    </p>
-
-                    <div
-                      title={
-                        day.isFuture
-                          ? "Future day"
-                          : day.isNoSpendDay
-                            ? "No spend day"
-                            : "Spending day"
+            {data.categoryBudgets.length > 0 ? (
+              <div className="space-y-3">
+                {data.categoryBudgets.map((budget) => (
+                  <div key={budget.id}>
+                    <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                      <span className="truncate text-foreground">{budget.label}</span>
+                      <span
+                        className={
+                          budget.usedPercentage > 90
+                            ? "shrink-0 text-red-400 tabular-nums"
+                            : budget.usedPercentage >= 70
+                              ? "shrink-0 text-amber-300 tabular-nums"
+                              : "shrink-0 text-muted-foreground tabular-nums"
+                        }
+                      >
+                        {formatCurrency(budget.spent)} / {formatCurrency(budget.amount)} ({budget.usedPercentage}%)
+                      </span>
+                    </div>
+                    <ProgressBar
+                      value={budget.usedPercentage}
+                      color={
+                        budget.usedPercentage > 90
+                          ? "bg-red-500"
+                          : budget.usedPercentage >= 70
+                            ? "bg-amber-500"
+                            : "bg-green-500"
                       }
-                      className={`mx-auto h-7 w-7 rounded-full border ${day.isNoSpendDay
-                        ? "border-[#238636] bg-[#238636]"
-                        : day.hasExpense
-                          ? "border-red-500/40 bg-red-500/20"
-                          : "border-[#3D444D] bg-[#151B23]"
-                        }`}
                     />
                   </div>
                 ))}
               </div>
-            </SectionCard>
-
-            <SectionCard className="p-4">
-              <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-sm font-semibold text-white sm:text-base">
-                    Weekly Report
-                  </h2>
-                  <p className="mt-1 text-xs text-[#8B949E]">
-                    Quick spending summary
-                  </p>
-                </div>
-
-                <Link
-                  href="/dashboard/insights"
-                  className="shrink-0 text-xs text-[#58A6FF]"
-                >
-                  Full Report
-                </Link>
-              </div>
-
-              <p className="text-xs text-[#8B949E]">This Week</p>
-              <p className="mt-1 truncate text-2xl font-bold text-white">
-                {dashboardData.summaryCards.thisMonthSpend.formattedValue}
+            ) : (
+              <p className="text-xs leading-5 text-muted-foreground">
+                No category budgets configured.
               </p>
-              <p className="mt-1 text-xs text-[#8B949E]">Total Spend</p>
+            )}
+          </div>
+        </Panel>
+      </section>
 
-              <div className="mt-4 rounded-2xl bg-[#010409] p-3">
-                <div className="flex min-w-0 items-start gap-2">
-                  <BarChart3 size={16} className="mt-0.5 shrink-0 text-yellow-400" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">
-                      Spending summary ready
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-[#8B949E]">
-                      Check Insights for deeper category and budget analysis.
+      <section className="grid min-w-0 gap-4 lg:grid-cols-2">
+        <Panel className="min-w-0 p-0">
+          <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Recent Expenses</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">Latest activity</p>
+            </div>
+            <Link
+              href="/dashboard/expenses"
+              className="text-xs font-medium text-blue-400 hover:text-blue-300"
+            >
+              View all
+            </Link>
+          </div>
+
+          {data.recentExpenses.length > 0 ? (
+            <div className="divide-y divide-border/60 px-4 pb-2 sm:px-5">
+              {data.recentExpenses.slice(0, 3).map((expense) => {
+                const Icon = getExpenseIcon(expense.category);
+                return (
+                  <div
+                    key={expense.id}
+                    className="flex min-w-0 items-center justify-between gap-3 py-3"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-blue-400">
+                        <Icon className="size-3.5" aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {expense.name}
+                        </p>
+                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                          {expense.label} · {formatTime(expense.spentAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
+                      {expense.formattedAmount}
                     </p>
                   </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyBlock
+              title="No recent expenses"
+              description="Your latest expenses will appear here."
+            />
+          )}
+        </Panel>
+
+        <Panel className="min-w-0 p-0">
+          <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Upcoming Renewals</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">Renewing soon</p>
+            </div>
+            <Link
+              href="/dashboard/subscriptions"
+              className="text-xs font-medium text-blue-400 hover:text-blue-300"
+            >
+              View all
+            </Link>
+          </div>
+
+          {data.upcomingRenewals.length > 0 ? (
+            <div className="divide-y divide-border/60 px-4 pb-2 sm:px-5">
+              {data.upcomingRenewals.slice(0, 3).map((renewal) => (
+                <div
+                  key={renewal.id}
+                  className="flex min-w-0 items-center justify-between gap-3 py-3"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400">
+                      <CalendarClock className="size-3.5" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {renewal.name}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                        {renewal.planName || renewal.billingCycle} · {renewal.due}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
+                    {renewal.formattedAmount}
+                  </p>
                 </div>
-              </div>
-            </SectionCard>
-          </aside>
-        </section>
-      </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyBlock
+              title="No upcoming renewals"
+              description="Your active subscriptions will appear here."
+            />
+          )}
+        </Panel>
+      </section>
+
+      <section className="flex min-w-0 flex-col gap-2.5 rounded-lg border border-border/60 bg-card/50 px-3 py-2.5 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-300">
+            <Flame className="size-3.5" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xs font-medium text-foreground">No Spend Streak</h2>
+            <p className="text-[11px] text-muted-foreground">
+              {data.noSpend.streak > 0
+                ? `${data.noSpend.streak} ${data.noSpend.streak === 1 ? "day" : "days"} this week`
+                : "No spend-free days yet this week."}
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="flex items-center gap-2 sm:ml-5"
+          aria-label="No spend activity this week"
+        >
+          {data.noSpend.days.map((day, index) => (
+            <div key={`${day.label}-${index}`} className="text-center">
+              <p className="mb-0.5 text-[9px] text-muted-foreground">{day.label}</p>
+              <div
+                title={
+                  day.isFuture
+                    ? "Future day"
+                    : day.isNoSpendDay
+                      ? "No spend day"
+                      : "Spending day"
+                }
+                className={`size-3.5 rounded-full ${
+                  day.isNoSpendDay ? "bg-green-500" : "bg-muted-foreground/35"
+                }`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

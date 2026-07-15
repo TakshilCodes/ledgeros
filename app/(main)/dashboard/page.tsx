@@ -47,7 +47,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   }
 
   return (
-    <section className="w-full min-w-0 overflow-x-hidden">
+    <section className="w-full min-w-0">
       <DashboardClient data={result.data} selectedRange={selectedRange} />
     </section>
   );

@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import {
   CalendarDays,
-  IndianRupee,
   ReceiptText,
   TrendingUp,
   Wallet,
@@ -10,6 +9,8 @@ import {
 import ExpensesList from "@/components/Expense/ExpenseList";
 import ExpenseFilters from "@/components/Expense/ExpenseFilters";
 import AddExpenseButton from "@/components/Expense/AddExpenseButton";
+import { FinancialSummary } from "@/components/dashboard/financial-summary";
+import { LoadingSkeleton } from "@/components/ui/foundation";
 import { getExpenseStats, getExpenses } from "@/actions/expense/getExpenses";
 
 type Props = {
@@ -36,72 +37,26 @@ function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-function StatCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-}: {
-  title: string;
-  value: string;
-  subtitle: string;
-  icon: React.ElementType;
-}) {
-  return (
-    <div className="min-w-57.5 snap-start rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-[#8B949E]">{title}</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">{value}</h3>
-          <p className="mt-1 text-xs text-[#6E7681]">{subtitle}</p>
-        </div>
-
-        <div className="rounded-xl border border-[#3D444D] bg-[#151B23] p-2 text-[#58A6FF]">
-          <Icon size={18} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ExpensesListSkeleton() {
   return (
-    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-      <div className="space-y-3">
+    <section className="rounded-xl border border-border/70 bg-card">
+      <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-5">
+        <LoadingSkeleton className="h-4 w-28" />
+        <LoadingSkeleton className="h-3 w-20" />
+      </div>
+      <div className="divide-y divide-border/60 px-4 sm:px-5">
         {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-2xl border border-[#3D444D] bg-[#010409] p-4"
-          >
-            <div className="hidden items-start justify-between gap-4 md:flex">
-              <div className="flex min-w-0 flex-1 items-start gap-4">
-                <div className="h-12 w-12 animate-pulse rounded-2xl bg-[#151B23]" />
-
-                <div className="min-w-0 flex-1 space-y-3">
-                  <div className="h-4 w-44 animate-pulse rounded bg-[#151B23]" />
-                  <div className="h-3 w-64 animate-pulse rounded bg-[#151B23]" />
-                  <div className="h-6 w-32 animate-pulse rounded-full bg-[#151B23]" />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="h-5 w-20 animate-pulse rounded bg-[#151B23]" />
-                <div className="h-8 w-8 animate-pulse rounded-lg bg-[#151B23]" />
+          <div key={index} className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <LoadingSkeleton className="size-8 shrink-0 rounded-lg" />
+              <div className="min-w-0">
+                <LoadingSkeleton className="h-4 w-36 sm:w-44" />
+                <LoadingSkeleton className="mt-2 h-3 w-48 max-w-full sm:w-64" />
               </div>
             </div>
-
-            <div className="md:hidden">
-              <div className="flex items-start gap-3">
-                <div className="h-11 w-11 animate-pulse rounded-xl bg-[#151B23]" />
-
-                <div className="min-w-0 flex-1 space-y-3">
-                  <div className="h-4 w-36 animate-pulse rounded bg-[#151B23]" />
-                  <div className="h-3 w-48 animate-pulse rounded bg-[#151B23]" />
-                  <div className="h-5 w-24 animate-pulse rounded-full bg-[#151B23]" />
-                </div>
-
-                <div className="h-5 w-16 animate-pulse rounded bg-[#151B23]" />
-              </div>
+            <div className="flex shrink-0 items-center gap-3">
+              <LoadingSkeleton className="h-4 w-16 sm:w-20" />
+              <LoadingSkeleton className="size-8 rounded-lg" />
             </div>
           </div>
         ))}
@@ -114,7 +69,18 @@ async function ExpensesListSection({ filters }: { filters: Filters }) {
   const expensesData = await getExpenses(filters);
 
   return (
-    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
+    <section
+      aria-labelledby="expense-history-title"
+      className="rounded-xl border border-border/70 bg-card"
+    >
+      <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-5">
+        <div>
+          <h2 id="expense-history-title" className="text-sm font-semibold text-foreground">
+            Expense history
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">Your latest recorded spending</p>
+        </div>
+      </div>
       <ExpensesList
         initialExpenses={expensesData.expenses}
         initialCursor={expensesData.nextCursor}
@@ -126,7 +92,6 @@ async function ExpensesListSection({ filters }: { filters: Filters }) {
 
 export default async function ExpensesPage({ searchParams }: Props) {
   const params = await searchParams;
-
   const filters = {
     search: params.search || "",
     category: params.category || "ALL",
@@ -135,66 +100,54 @@ export default async function ExpensesPage({ searchParams }: Props) {
   };
 
   const statsData = await getExpenseStats();
-
   const filtersKey = JSON.stringify(filters);
 
+  const summaryItems = [
+    {
+      label: "This month",
+      value: formatCurrency(Number(statsData.thisMonth || 0)),
+      supportingText: "Total spent this month",
+      icon: Wallet,
+    },
+    {
+      label: "Today",
+      value: formatCurrency(Number(statsData.today || 0)),
+      supportingText: "Total spent today",
+      icon: CalendarDays,
+    },
+    {
+      label: "Top category",
+      value: statsData.topCategory || "None",
+      supportingText: "Highest spending category",
+      icon: TrendingUp,
+    },
+    {
+      label: "Total expenses",
+      value: String(statsData.totalExpenses || 0),
+      supportingText: "Recorded expense entries",
+      icon: ReceiptText,
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#010409] px-4 py-5 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <AddExpenseButton />
+    <div className="w-full min-w-0 space-y-4 text-foreground">
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">Spending summary</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Review and manage your recorded spending.
+          </p>
         </div>
+        <AddExpenseButton />
+      </section>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between md:hidden">
-            <p className="text-xs text-[#8B949E]">Overview</p>
+      <FinancialSummary items={summaryItems} />
 
-            <div className="flex items-center gap-2 text-xs text-[#6E7681]">
-              <span>Swipe to see more</span>
-            </div>
-          </div>
+      <ExpenseFilters />
 
-          <div className="relative">
-            <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3">
-              <StatCard
-                title="This Month"
-                value={formatCurrency(Number(statsData.thisMonth || 0))}
-                subtitle="Total spent this month"
-                icon={Wallet}
-              />
-
-              <StatCard
-                title="Today"
-                value={formatCurrency(Number(statsData.today || 0))}
-                subtitle="Total spent today"
-                icon={CalendarDays}
-              />
-
-              <StatCard
-                title="Top Category"
-                value={statsData.topCategory || "None"}
-                subtitle="Highest spending category"
-                icon={TrendingUp}
-              />
-
-              <StatCard
-                title="Expenses"
-                value={String(statsData.totalExpenses || 0)}
-                subtitle="Total expense records"
-                icon={ReceiptText}
-              />
-            </div>
-
-            <div className="pointer-events-none absolute bottom-3 right-0 top-0 w-12 bg-linear-to-l from-[#010409] to-transparent md:hidden" />
-          </div>
-        </div>
-
-        <ExpenseFilters />
-
-        <Suspense key={filtersKey} fallback={<ExpensesListSkeleton />}>
-          <ExpensesListSection filters={filters} />
-        </Suspense>
-      </div>
+      <Suspense key={filtersKey} fallback={<ExpensesListSkeleton />}>
+        <ExpensesListSection filters={filters} />
+      </Suspense>
     </div>
   );
 }

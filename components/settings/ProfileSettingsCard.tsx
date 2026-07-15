@@ -107,27 +107,25 @@ export default function ProfileSettingsCard({
   }
 
   return (
-    <section className="rounded-2xl border border-[#3D444D] bg-[#0D1117] p-4">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#3D444D] bg-[#151B23]">
-          <ShieldCheck className="h-4 w-4 text-[#3FB950]" />
+    <section className="overflow-hidden rounded-xl border border-border/70 bg-card">
+      <div className="flex items-center gap-3 border-b border-border/70 px-4 py-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+          <ShieldCheck className="h-4 w-4 text-green-400" />
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-white">
-            Account Settings
-          </h2>
-          <p className="mt-0.5 text-xs text-[#8B949E]">
+
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Update your name, email, and password.
           </p>
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="divide-y divide-border/60">
         <CompactSettingsCard
           title="Display name"
           description="Shown inside your dashboard."
-          icon={<User className="h-4 w-4 text-[#58A6FF]" />}
+          icon={<User className="h-4 w-4 text-blue-400" />}
         >
           <form
             onSubmit={handleUpdateProfile}
@@ -178,7 +176,7 @@ export default function ProfileSettingsCard({
               />
 
               {!canManageCredentials && (
-                <p className="text-xs text-[#8B949E]">
+                <p className="text-xs text-muted-foreground">
                   Email change is disabled for Google sign-in accounts.
                 </p>
               )}
@@ -201,7 +199,7 @@ export default function ProfileSettingsCard({
               ? "Keep your account secure."
               : "Password is managed by Google."
           }
-          icon={<Lock className="h-4 w-4 text-[#3FB950]" />}
+          icon={<Lock className="h-4 w-4 text-green-400" />}
         >
           {canManageCredentials ? (
             <form onSubmit={handleChangePassword} className="space-y-3">
@@ -238,7 +236,7 @@ export default function ProfileSettingsCard({
                 <button
                   type="button"
                   onClick={() => setShowPasswords((prev) => !prev)}
-                  className="inline-flex items-center gap-2 text-xs font-medium text-[#8B949E] transition hover:text-[#C9D1D9]"
+                  className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground transition hover:text-foreground"
                 >
                   {showPasswords ? (
                     <EyeOff className="h-4 w-4" />
@@ -257,11 +255,11 @@ export default function ProfileSettingsCard({
               </div>
             </form>
           ) : (
-            <div className="rounded-lg border border-[#3D444D] bg-[#0D1117] p-3">
-              <p className="text-sm font-medium text-[#C9D1D9]">
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-sm font-medium text-foreground">
                 Google account connected
               </p>
-              <p className="mt-1 text-xs leading-5 text-[#8B949E]">
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
                 This account uses Google sign-in, so email and password changes
                 are managed by Google.
               </p>
@@ -287,15 +285,15 @@ function CompactSettingsCard({
   children,
 }: CompactSettingsCardProps) {
   return (
-    <div className="rounded-xl border border-[#3D444D] bg-[#151B23] p-3 transition hover:border-[#58A6FF]/40 sm:p-4">
-      <div className="mb-3 flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#3D444D] bg-[#0D1117]">
+    <div className="px-4 py-4 transition-colors hover:bg-muted/20 sm:px-5">
+      <div className="mb-3 flex items-center gap-2.5">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
           {icon}
         </div>
 
         <div>
           <h3 className="text-sm font-semibold text-white">{title}</h3>
-          <p className="mt-0.5 text-xs text-[#8B949E]">{description}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
         </div>
       </div>
 
@@ -329,13 +327,13 @@ function InputField({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block text-xs font-medium text-[#C9D1D9]"
+        className="mb-1.5 block text-xs font-medium text-foreground"
       >
         {label}
       </label>
 
       <div className="relative">
-        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B949E]">
+        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
           {icon}
         </div>
 
@@ -346,7 +344,7 @@ function InputField({
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          className="h-9 w-full rounded-lg border border-[#3D444D] bg-[#0D1117] pl-10 pr-3 text-sm text-white outline-none transition placeholder:text-[#8B949E] focus:border-[#58A6FF] disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
         />
       </div>
     </div>
@@ -401,7 +399,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={isPending || disabled}
-      className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#238636] px-4 text-sm font-medium text-white transition hover:bg-[#2ea043] disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
     >
       {isPending ? (
         <>
