@@ -1,0 +1,162 @@
+.page {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.page[data-motion-ready="true"] [data-reveal] {
+  opacity: 0;
+  filter: blur(7px);
+  transform: translateY(28px) scale(0.985);
+  transition:
+    opacity 720ms var(--ease-out),
+    filter 720ms var(--ease-out),
+    transform 720ms var(--ease-out);
+  will-change: opacity, filter, transform;
+}
+
+.page[data-motion-ready="true"] [data-reveal][data-visible="true"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+}
+
+.page [data-delay="1"] { transition-delay: 80ms !important; }
+.page [data-delay="2"] { transition-delay: 150ms !important; }
+.page [data-delay="3"] { transition-delay: 220ms !important; }
+.page [data-delay="4"] { transition-delay: 290ms !important; }
+
+.primaryButton,
+.secondaryButton {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.primaryButton::before {
+  background: linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.24), transparent 68%);
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: translateX(-140%) skewX(-18deg);
+  transition: transform 650ms var(--ease-out);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.primaryButton:hover::before {
+  transform: translateX(140%) skewX(-18deg);
+}
+
+.primaryButton:hover {
+  box-shadow: 0 10px 34px rgba(46, 160, 67, 0.24);
+}
+
+.primaryButton svg,
+.secondaryButton svg {
+  transition: transform 220ms var(--ease-out);
+}
+
+.primaryButton:hover svg,
+.secondaryButton:hover svg {
+  transform: translateX(3px);
+}
+
+.secondaryButton::after {
+  background: radial-gradient(circle, rgba(88, 166, 255, 0.16), transparent 65%);
+  content: "";
+  height: 120px;
+  opacity: 0;
+  position: absolute;
+  right: -50px;
+  top: -70px;
+  transform: scale(0.5);
+  transition: opacity 300ms ease, transform 500ms var(--ease-out);
+  width: 120px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.secondaryButton:hover::after {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+.heroGlow {
+  animation: glowPulse 5.5s ease-in-out infinite;
+}
+
+.floatingVisual {
+  animation: gentleFloat 6s ease-in-out infinite;
+}
+
+.valueCard {
+  transition:
+    transform 260ms var(--ease-out),
+    box-shadow 260ms ease,
+    border-color 260ms ease;
+}
+
+.valueCard:hover {
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.24);
+  transform: translateY(-5px);
+}
+
+.ctaShell {
+  background:
+    radial-gradient(circle at 12% 20%, rgba(46, 160, 67, 0.18), transparent 32%),
+    radial-gradient(circle at 88% 80%, rgba(88, 166, 255, 0.14), transparent 36%),
+    #0d1117;
+}
+
+.ctaShell::before {
+  background-image:
+    linear-gradient(rgba(240, 246, 252, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 246, 252, 0.025) 1px, transparent 1px);
+  background-size: 34px 34px;
+  content: "";
+  inset: 0;
+  mask-image: linear-gradient(to right, black, transparent 72%);
+  pointer-events: none;
+  position: absolute;
+}
+
+.ctaPreview {
+  animation: previewGlow 4.5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.72; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes previewGlow {
+  0%, 100% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28); }
+  50% { box-shadow: 0 24px 70px rgba(88, 166, 255, 0.13); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page[data-motion-ready="true"] [data-reveal] {
+    filter: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .heroGlow,
+  .floatingVisual,
+  .ctaPreview {
+    animation: none;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .valueCard,
+  .primaryButton svg,
+  .secondaryButton svg {
+    transition: none;
+  }
+}

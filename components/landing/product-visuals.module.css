@@ -1,0 +1,73 @@
+.chartBar {
+  transform-origin: bottom;
+}
+
+:global([data-motion-ready="true"]) .chartBar {
+  transform: scaleY(0);
+}
+
+:global([data-visible="true"]) .chartBar {
+  animation: barGrow 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.progressFill {
+  transform-origin: left;
+}
+
+:global([data-motion-ready="true"]) .progressFill {
+  transform: scaleX(0);
+}
+
+:global([data-visible="true"]) .progressFill {
+  animation: progressGrow 950ms cubic-bezier(0.16, 1, 0.3, 1) 180ms forwards;
+}
+
+:global([data-motion-ready="true"]) .donut {
+  clip-path: inset(0 100% 0 0 round 999px);
+}
+
+:global([data-visible="true"]) .donut {
+  animation: donutReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards;
+}
+
+.liveDot {
+  animation: livePulse 2.2s ease-in-out infinite;
+}
+
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes progressGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes donutReveal {
+  from { clip-path: inset(0 100% 0 0 round 999px); transform: rotate(-18deg); }
+  to { clip-path: inset(0 0 0 0 round 999px); transform: rotate(0); }
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+  50% { box-shadow: 0 0 0 5px rgba(63, 185, 80, 0.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chartBar,
+  .progressFill {
+    animation: none !important;
+    transform: none;
+  }
+
+  .donut {
+    animation: none !important;
+    clip-path: none;
+    transform: none;
+  }
+
+  .liveDot {
+    animation: none;
+  }
+}
